@@ -1,0 +1,11 @@
+[package]
+name = "predict"
+version = "0.1.0"
+authors = ["steven.t.homer@gmail.com <steven.t.homer@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+num = "0.2.0"
+hound = "3.4.0"
