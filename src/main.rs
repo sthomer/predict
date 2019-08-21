@@ -1,6 +1,7 @@
 use hound;
 use num::complex::Complex;
 use std::f64::consts::PI;
+use ndarray::{Array, Dimension, Axis};
 
 type C64 = Complex<f64>;
 
@@ -17,7 +18,9 @@ fn main() {
     let slides_3 = slides_3.collect::<Vec<_>>();
 
     let samples_c64 = to_c64(&samples);
-    let freqs = dft(&samples_c64[..100]);
+    let freqs_1d = dft(&samples_c64[..100]);
+    let samples_arr = Array::from_vec(samples_c64[..100].to_vec());
+    let freqs_md = mddft(&samples_arr);
 
     println!(
         "1: {}\n2: {}\n3: {}",
@@ -33,7 +36,7 @@ fn to_c64(vs: &Vec<i16>) -> Vec<C64> {
     }).collect()
 }
 
-/// Naive Discrete Fourier Transform
+/// Naive 1D Discrete Fourier Transform
 fn dft(vs: &[C64]) -> Vec<C64> {
     let mut fs: Vec<C64> = Vec::new();
     let period = vs.len() as f64;
@@ -45,6 +48,32 @@ fn dft(vs: &[C64]) -> Vec<C64> {
             f += v * (SPEED * k * n / period).exp();
         }
         fs.push(f);
+    }
+    fs
+}
+
+/// Naive ND Discrete Fourier Transform
+fn mddft<D: Dimension>(vs: &Array<C64, D>) -> Array<C64, D> {
+    let mut fs = vs.clone();
+    for d in 0..vs.ndim() {
+        let size = fs.len_of(Axis(d));
+        let period= size as f64;
+        for mut lane in fs.lanes_mut(Axis(d)) {
+            let mut row: Vec<C64> = Vec::new();
+            for k in 0..size {
+                let k = k as f64;
+                let mut f = C64::new(0f64, 0f64);
+                for (n, v) in lane.iter().enumerate() {
+                    let n = n as f64;
+                    f += v * (SPEED * k * n / period).exp();
+                }
+                row.push(f);
+            }
+            let mut row_iter = row.iter();
+            for v in lane.iter_mut() {
+                *v = *row_iter.next().unwrap();
+            }
+        }
     }
     fs
 }
