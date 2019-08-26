@@ -18,9 +18,11 @@ fn main() {
     let slides_3 = slides_3.collect::<Vec<_>>();
 
     let samples_c64 = to_c64(&samples);
-    let freqs_1d = dft(&samples_c64[..100]);
-    let samples_arr = Array::from_vec(samples_c64[..100].to_vec());
-    let freqs_md = mddft(&samples_arr);
+    let freqs_1d_dft = dft(&samples_c64[..128]);
+    let samples_vec = samples_c64[..128].to_vec();
+    let freqs_1d_fft = fft(samples_vec);
+//    let samples_arr = Array::from_vec(samples_vec);
+//    let freqs_md = mddft(&samples_arr);
 
     println!(
         "1: {}\n2: {}\n3: {}",
@@ -34,6 +36,33 @@ fn to_c64(vs: &Vec<i16>) -> Vec<C64> {
     vs.iter().map(|v| {
         C64::new(*v as f64, 0f64)
     }).collect()
+}
+
+/// 1D Fast Fourier Transform
+fn fft(vs: Vec<C64>) -> Vec<C64> {
+    let n = vs.len();
+    if n == 1 {
+        return vs;
+    } else {
+        let evens = vs.iter().enumerate()
+            .filter(|&(i, _)| i % 2 == 0)
+            .map(|(_, &v)| v)
+            .collect();
+        let odds = vs.iter().enumerate()
+            .filter(|&(i, _)| i % 2 != 0)
+            .map(|(_, &v)| v)
+            .collect();
+        let f_even = fft(evens);
+        let f_odd = fft(odds);
+        let mut combined: Vec<C64> = vec![C64::new(0f64, 0f64); n];
+        let n_f64 = n as f64;
+        for k in 0..n/2 {
+            let k_f64 = k as f64;
+            combined[k] = f_even[k] + f_odd[k] * (SPEED * k_f64 / n_f64);
+            combined[k + n/2] = f_even[k] - f_odd[k] * (SPEED * k_f64 / n_f64)
+        }
+        combined
+    }
 }
 
 /// Naive 1D Discrete Fourier Transform
