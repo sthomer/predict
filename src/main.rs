@@ -8,7 +8,7 @@ type C64 = Complex<f64>;
 const SPEED: C64 = C64 {re: 0f64, im: -2.0 * PI};
 
 fn main() {
-    let mut reader = hound::WavReader::open("/home/sthomer/rust/predict/export.wav").unwrap();
+    let mut reader = hound::WavReader::open("/home/sthomer/Code/CLionProjects/predict/export.wav").unwrap();
     let samples: Vec<i16> = reader.samples().filter_map(Result::ok).collect();
     let slides_1 = slides(&samples, 8, 4);
     let slides_1 = slides_1.collect::<Vec<_>>();
@@ -17,10 +17,9 @@ fn main() {
     let slides_3 = slides(&slides_2, 8, 4);
     let slides_3 = slides_3.collect::<Vec<_>>();
 
-    let samples_c64 = to_c64(&samples);
-    let freqs_1d_dft = dft(&samples_c64[..128]);
-    let samples_vec = samples_c64[..128].to_vec();
-    let freqs_1d_fft = fft(samples_vec);
+    let samples = to_c64(&samples)[..128].to_vec();
+    let freqs_1d_dft = dft(&samples);
+    let freqs_1d_fft = fft(&samples);
 //    let samples_arr = Array::from_vec(samples_vec);
 //    let freqs_md = mddft(&samples_arr);
 
@@ -39,21 +38,21 @@ fn to_c64(vs: &Vec<i16>) -> Vec<C64> {
 }
 
 /// 1D Fast Fourier Transform
-fn fft(vs: Vec<C64>) -> Vec<C64> {
+fn fft(vs: &Vec<C64>) -> Vec<C64> {
     let n = vs.len();
     if n == 1 {
-        return vs;
+        return vs.clone();
     } else {
-        let evens = vs.iter().enumerate()
+        let evens = (*vs).iter().enumerate()
             .filter(|&(i, _)| i % 2 == 0)
             .map(|(_, &v)| v)
             .collect();
-        let odds = vs.iter().enumerate()
+        let odds = (*vs).iter().enumerate()
             .filter(|&(i, _)| i % 2 != 0)
             .map(|(_, &v)| v)
             .collect();
-        let f_even = fft(evens);
-        let f_odd = fft(odds);
+        let f_even = fft(&evens);
+        let f_odd = fft(&odds);
         let mut combined: Vec<C64> = vec![C64::new(0f64, 0f64); n];
         let n_f64 = n as f64;
         for k in 0..n/2 {
@@ -65,8 +64,18 @@ fn fft(vs: Vec<C64>) -> Vec<C64> {
     }
 }
 
+//fn mdfft<D: Dimension>(vs: &Array<C64, D>) -> Array<C64, D> {
+//    let mut fs = vs.clone();
+//    for d in 0..vs.dim() {
+//        let size = fs.len_of(Axis(d));
+//        let period = size as f64;
+//        for mut lane in fs.lanes_mut(Axis(d)) {
+//        }
+//    }
+//}
+
 /// Naive 1D Discrete Fourier Transform
-fn dft(vs: &[C64]) -> Vec<C64> {
+fn dft(vs: &Vec<C64>) -> Vec<C64> {
     let mut fs: Vec<C64> = Vec::new();
     let period = vs.len() as f64;
     for k in 0..vs.len() {
@@ -86,7 +95,7 @@ fn mddft<D: Dimension>(vs: &Array<C64, D>) -> Array<C64, D> {
     let mut fs = vs.clone();
     for d in 0..vs.ndim() {
         let size = fs.len_of(Axis(d));
-        let period= size as f64;
+        let period = size as f64;
         for mut lane in fs.lanes_mut(Axis(d)) {
             let mut row: Vec<C64> = Vec::new();
             for k in 0..size {
