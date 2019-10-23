@@ -1,15 +1,15 @@
-use std::fs;
+//use std::fs;
 
 pub struct Config {
-    load_from: String,
+    pub load_from: String,
     //fs::File,
-    save_at: String,
+    pub save_at: String,
     //fs::File,
-    init_with: String,
+    pub init_with: String,
     //fs::File,
-    radius_scale: u16,
-    resolution: u16,
-    max_depth: u16,
+    pub radius_scale: u16,
+    pub resolution: u16,
+    pub max_depth: u16,
 }
 
 impl Config {
@@ -17,7 +17,7 @@ impl Config {
         // TODO: Parse arguments
         Ok(Config {
             load_from: "".to_string(), //fs::File(),
-            save_at: "".to_string(), //fs::File(),
+            save_at: "".to_string(),   //fs::File(),
             init_with: "".to_string(), //fs::File(),
             radius_scale: 1,
             resolution: 256,
@@ -33,5 +33,3 @@ mod tests {
     #[test]
     fn test() {}
 }
-
-

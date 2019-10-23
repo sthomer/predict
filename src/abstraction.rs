@@ -1,28 +1,33 @@
+use ndarray::{Array, Axis, Dimension};
 use num::complex::Complex;
 use std::f64::consts::PI;
-use ndarray::{Array, Dimension, Axis};
 
-type C64 = Complex<f64>;
+pub type C64 = Complex<f64>;
 
-const SPEED: C64 = C64 { re: 0f64, im: -2.0 * PI };
+const SPEED: C64 = C64 {
+    re: 0f64,
+    im: -2.0 * PI,
+};
 
-fn to_c64(vs: &Vec<i16>) -> Vec<C64> {
-    vs.iter().map(|v| {
-        C64::new(*v as f64, 0f64)
-    }).collect()
+pub fn to_c64(vs: Vec<f64>) -> Vec<C64> {
+    vs.iter().map(|v| C64::new(*v, 0f64)).collect()
 }
 
 /// 1D Fast Fourier Transform
-fn fft(vs: &Vec<C64>) -> Vec<C64> {
+pub fn fft(vs: &Vec<C64>) -> Vec<C64> {
     let n = vs.len();
     if n == 1 {
         return vs.clone();
     } else {
-        let evens = (*vs).iter().enumerate()
+        let evens = (*vs)
+            .iter()
+            .enumerate()
             .filter(|&(i, _)| i % 2 == 0)
             .map(|(_, &v)| v)
             .collect();
-        let odds = (*vs).iter().enumerate()
+        let odds = (*vs)
+            .iter()
+            .enumerate()
             .filter(|&(i, _)| i % 2 != 0)
             .map(|(_, &v)| v)
             .collect();
@@ -97,10 +102,10 @@ mod tests {
 
     #[test]
     fn test() {
-//        let samples = to_c64(&samples)[..128].to_vec();
-//        let freqs_1d_dft = dft(&samples);
-//        let freqs_1d_fft = fft(&samples);
-//        let samples_arr = Array::from_vec(samples_vec);
-//        let freqs_md = mddft(&samples_arr);
+        //        let samples = to_c64(&samples)[..128].to_vec();
+        //        let freqs_1d_dft = dft(&samples);
+        //        let freqs_1d_fft = fft(&samples);
+        //        let samples_arr = Array::from_vec(samples_vec);
+        //        let freqs_md = mddft(&samples_arr);
     }
 }

@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 
+use predict::Config;
 use std::env;
 use std::process;
-use predict::Config;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
