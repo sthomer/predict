@@ -1,10 +1,36 @@
 use crate::abstraction::C64;
 use crate::Config;
+use itertools::Itertools;
 
 use std::collections::HashMap;
 
-pub fn perceive(config: &Config, signal: Vec<C64>) -> Vec<Dimension> {
-    vec![Dimension::new(0, config.radius_scale, config.resolution)]
+pub fn process(config: &Config, signal: Vec<C64>) -> Vec<Dimension> {
+    let mut dimensions = vec![
+        Dimension::new(0, 1 * config.radius_scale, config.resolution),
+        Dimension::new(1, 10 * config.radius_scale, config.resolution),
+        Dimension::new(2, 100 * config.radius_scale, config.resolution),
+        Dimension::new(3, 1000 * config.radius_scale, config.resolution),
+    ];
+
+    for point in signal.into_iter() {
+        perceive(&mut dimensions, point)
+    }
+    dimensions
+}
+
+fn perceive(dimensions: &mut Vec<Dimension>, point: C64) {
+    let mut spectrum = Spectrum { point, length: 1 };
+    for dimension in dimensions.iter_mut() {
+        match dimension.perceive(spectrum) {
+            Some(result) => spectrum = result,
+            None => break
+        }
+    }
+}
+
+struct Spectrum {
+    point: C64,
+    length: usize,
 }
 
 type Label = String;
@@ -25,18 +51,15 @@ pub struct Dimension {
     level: u16,
     radius_scale: u16,
     resolution: u16,
-
     stats: HashMap<Label, Stats>,
     locations: HashMap<Label, Location>,
     unigram: HashMap<Label, usize>,
     bigram: HashMap<Label, HashMap<Label, usize>>,
     total: usize,
-
     prev: Label,
     ongoing: Vec<C64>,
     lengths: Vec<usize>,
     current: Vec<Label>,
-
     segments: Vec<Vec<Label>>,
     relative_lengths: Vec<Vec<usize>>,
 }
@@ -47,20 +70,26 @@ impl Dimension {
             level,
             radius_scale,
             resolution,
-
             stats: HashMap::new(),
             locations: HashMap::new(),
             unigram: HashMap::new(),
             bigram: HashMap::new(),
             total: 0,
-
             prev: Label::new(),
             ongoing: Vec::new(),
             lengths: Vec::new(),
             current: Vec::new(),
-
             segments: Vec::new(),
             relative_lengths: Vec::new(),
+        }
+    }
+
+    pub fn perceive(&mut self, spectrum: Spectrum) -> Option<Spectrum> {
+        self.ongoing.push(spectrum.point);
+        if spectrum.length == 1 {
+            Some(Spectrum { point: C64::new(10.0, 10.0), length: 10 })
+        } else {
+            None
         }
     }
 }
@@ -70,5 +99,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test() {}
+    fn test_process() -> Result<(), String> {
+        let config = Config::default()?;
+        let signal = vec![C64::new(1.0, 1.0); 100];
+        let dimensions = process(&config, signal);
+        Ok(())
+    }
 }

@@ -19,7 +19,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let frequency_signal = abstraction::fft(&time_signal);
 
     // Perceive frequency-domain signal
-    let dimensions = perception::perceive(&config, frequency_signal);
+    let dimensions = perception::process(&config, frequency_signal);
 
     // TODO: Use serde for serialization
     // Save memory

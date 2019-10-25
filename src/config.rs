@@ -13,6 +13,18 @@ pub struct Config {
 }
 
 impl Config {
+
+    pub fn default() -> Result<Config, &'static str> {
+        Ok(Config {
+            load_from: "".to_string(), //fs::File(),
+            save_at: "".to_string(),   //fs::File(),
+            init_with: "".to_string(), //fs::File(),
+            radius_scale: 1,
+            resolution: 256,
+            max_depth: 4,
+        })
+    }
+
     pub fn new(args: &[String]) -> Result<Config, &'static str> {
         // TODO: Parse arguments
         Ok(Config {
