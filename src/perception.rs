@@ -1,6 +1,7 @@
 use crate::abstraction::C64;
 use crate::Config;
 use itertools::Itertools;
+use crate::{abstraction, categorization, segmentation};
 
 use std::collections::HashMap;
 
@@ -28,12 +29,12 @@ fn perceive(dimensions: &mut Vec<Dimension>, point: C64) {
     }
 }
 
-struct Spectrum {
-    point: C64,
-    length: usize,
+pub struct Spectrum {
+    pub point: C64,
+    pub length: usize,
 }
 
-type Label = String;
+pub type Label = String;
 
 struct Stats {
     sample_mean: C64,
@@ -85,13 +86,19 @@ impl Dimension {
     }
 
     pub fn perceive(&mut self, spectrum: Spectrum) -> Option<Spectrum> {
-        self.ongoing.push(spectrum.point);
-        if spectrum.length == 1 {
-            Some(Spectrum { point: C64::new(10.0, 10.0), length: 10 })
-        } else {
-            None
+        let category = categorization::categorize(self, &spectrum);
+        self.update(&category, &spectrum);
+        if segmentation::segment(self, &category) {
+            let superior = abstraction::transform(&self.ongoing);
+            return Some(superior)
         }
+        self.prev = category;
+        None
     }
+
+    pub fn update(&mut self, category: &String, spectrum: &Spectrum) {}
+
+
 }
 
 #[cfg(test)]
