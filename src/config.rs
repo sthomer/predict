@@ -13,7 +13,6 @@ pub struct Config {
 }
 
 impl Config {
-
     pub fn default() -> Result<Config, &'static str> {
         Ok(Config {
             load_from: "".to_string(), //fs::File(),

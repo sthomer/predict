@@ -1,12 +1,15 @@
+use crate::perception::Spectrum;
 use ndarray::{Array, Axis, Dimension};
 use num::complex::Complex;
 use std::f64::consts::PI;
-use crate::perception::Spectrum;
 
 pub type C64 = Complex<f64>;
 
 pub fn transform(trajectory: &Vec<C64>) -> Spectrum {
-    Spectrum { point: C64::new(5.0, 5.0), length: 5 }
+    Spectrum {
+        point: C64::new(5.0, 5.0),
+        length: 5,
+    }
 }
 
 const SPEED: C64 = C64 {

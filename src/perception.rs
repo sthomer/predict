@@ -1,7 +1,7 @@
 use crate::abstraction::C64;
 use crate::Config;
-use itertools::Itertools;
 use crate::{abstraction, categorization, segmentation};
+use itertools::Itertools;
 
 use std::collections::HashMap;
 
@@ -24,7 +24,7 @@ fn perceive(dimensions: &mut Vec<Dimension>, point: C64) {
     for dimension in dimensions.iter_mut() {
         match dimension.perceive(spectrum) {
             Some(result) => spectrum = result,
-            None => break
+            None => break,
         }
     }
 }
@@ -43,9 +43,9 @@ struct Stats {
     prior_variance: C64,
 }
 
-struct Location {
-    centroid: C64,
-    radius: C64,
+pub struct Location {
+    pub centroid: C64,
+    pub radius: f64,
 }
 
 pub struct Dimension {
@@ -53,10 +53,10 @@ pub struct Dimension {
     radius_scale: u16,
     resolution: u16,
     stats: HashMap<Label, Stats>,
-    locations: HashMap<Label, Location>,
-    unigram: HashMap<Label, usize>,
+    pub locations: HashMap<Label, Location>,
+    pub unigram: HashMap<Label, usize>,
     bigram: HashMap<Label, HashMap<Label, usize>>,
-    total: usize,
+    pub total: usize,
     prev: Label,
     ongoing: Vec<C64>,
     lengths: Vec<usize>,
@@ -90,15 +90,13 @@ impl Dimension {
         self.update(&category, &spectrum);
         if segmentation::segment(self, &category) {
             let superior = abstraction::transform(&self.ongoing);
-            return Some(superior)
+            return Some(superior);
         }
         self.prev = category;
         None
     }
 
     pub fn update(&mut self, category: &String, spectrum: &Spectrum) {}
-
-
 }
 
 #[cfg(test)]
