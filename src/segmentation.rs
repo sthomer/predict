@@ -1,7 +1,9 @@
-use crate::perception::{Dimension, Label};
+use crate::perception::{UnigramModel, Label};
+use std::collections::HashMap;
 
-pub fn segment(dimension: &Dimension, category: &Label) -> bool {
-    false
+pub fn segment(unigram: &UnigramModel, previous: &Label, current: &Label) -> bool {
+    // Equivalent to comparing information content i.e. -log2(count/total)
+    unigram.count(previous) > unigram.count(current)
 }
 
 #[cfg(test)]

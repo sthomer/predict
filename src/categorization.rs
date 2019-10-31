@@ -1,35 +1,22 @@
+use std::collections::HashMap;
 use crate::abstraction::C64;
-use crate::perception::{Dimension, Label, Location, Spectrum};
-use rand::distributions::Alphanumeric;
-use rand::{thread_rng, Rng};
+use crate::perception::{Dimension, Spectrum, Concept, Label};
 
-pub fn categorize(dimension: &Dimension, spectrum: &Spectrum) -> Label {
-    let mut candidates = Vec::new();
-    for (label, Location { centroid, radius }) in &dimension.locations {
-        if norm(centroid - spectrum.point) <= *radius {
-            let ic = -(dimension.unigram[label] as f64 / dimension.total as f64).log2();
-            candidates.push((label, ic))
-        }
-    }
-    if candidates.is_empty() {
-        generate_label()
-    } else {
-        candidates
-            .into_iter()
-            .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
-            .unwrap()
-            .0
-            .clone()
-    }
+pub fn categorize(concepts: &HashMap<Label, Concept>, concept: &Concept) -> Label {
+    concepts.iter().map(|(_, c)| c)
+        .filter(|c| {
+            norm(c.location.centroid - concept.location.centroid) <= c.location.radius
+        })
+//        .min_by_key(|c| c.count)
+        .nth(0)
+        .unwrap_or(concept)
+        .label.clone()
 }
 
 fn norm(point: C64) -> f64 {
     point.norm()
 }
 
-fn generate_label() -> Label {
-    thread_rng().sample_iter(&Alphanumeric).take(10).collect()
-}
 
 #[cfg(test)]
 mod tests {

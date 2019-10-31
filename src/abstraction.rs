@@ -1,14 +1,16 @@
-use crate::perception::Spectrum;
+use crate::perception::{Spectrum, Concept};
 use ndarray::{Array, Axis, Dimension};
 use num::complex::Complex;
 use std::f64::consts::PI;
 
 pub type C64 = Complex<f64>;
 
-pub fn transform(trajectory: &Vec<C64>) -> Spectrum {
+pub fn transform(trajectory: &Vec<(Concept, usize)>) -> Spectrum {
+    let signal: Vec<C64> = trajectory.iter().map(|(c, _)| c.location.centroid).collect();
+    let spectrum = fft(&signal);
     Spectrum {
-        point: C64::new(5.0, 5.0),
-        length: 5,
+        point: C64::new(0.0, 0.0), // spectrum
+        length: spectrum.len(),
     }
 }
 

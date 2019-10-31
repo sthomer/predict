@@ -1,9 +1,12 @@
 use crate::abstraction::C64;
 use crate::Config;
 use crate::{abstraction, categorization, segmentation};
-use itertools::Itertools;
+
+use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng};
 
 use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
 
 pub fn process(config: &Config, signal: Vec<C64>) -> Vec<Dimension> {
     let mut dimensions = vec![
@@ -34,69 +37,174 @@ pub struct Spectrum {
     pub length: usize,
 }
 
-pub type Label = String;
-
-struct Stats {
+#[derive(Clone)]
+pub struct Moments {
     sample_mean: C64,
     sample_variance: C64,
     prior_mean: C64,
     prior_variance: C64,
 }
 
+#[derive(Clone)]
 pub struct Location {
     pub centroid: C64,
     pub radius: f64,
+}
+
+pub type Label = String;
+
+#[derive(Clone)]
+pub struct Concept {
+    pub label: Label,
+    pub location: Location,
+    pub moments: Moments,
+}
+
+fn generate_label() -> Label {
+    thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(10)
+        .collect()
+}
+
+impl PartialEq for Concept {
+    fn eq(&self, other: &Self) -> bool {
+        self.label == other.label
+    }
+}
+
+impl Eq for Concept {}
+
+impl Hash for Concept {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.label.hash(state);
+    }
+}
+
+impl Concept {
+    pub fn empty() -> Concept {
+        let spectrum = Spectrum {
+            point: C64::new(0.0, 0.0),
+            length: 0,
+        };
+        Concept::new(&spectrum, 0.0)
+    }
+    pub fn new(spectrum: &Spectrum, radius: f64) -> Concept {
+        Concept {
+            label: generate_label(),
+            location: Location {
+                centroid: spectrum.point,
+                radius: 0.0,
+            },
+            moments: Moments {
+                sample_mean: spectrum.point,
+                sample_variance: C64::new(0.0, 0.0),
+                prior_mean: spectrum.point,
+                prior_variance: C64::new((radius / 3.0).powi(2), 0.0),
+            },
+        }
+    }
+}
+
+pub struct UnigramModel {
+    unigram: HashMap<Label, usize>,
+    total: usize,
+}
+
+impl UnigramModel {
+    pub fn new() -> UnigramModel {
+        UnigramModel {
+            unigram: HashMap::new(),
+            total: 0,
+        }
+    }
+
+    pub fn increment(&mut self, label: &Label) {
+        self.total += 1;
+        *self.unigram.entry(label.clone()).or_insert(0) += 1;
+    }
+
+    pub fn count(&self, label: &Label) -> &usize {
+        self.unigram.get(label).unwrap_or(&0)
+    }
+}
+
+pub struct BigramModel {
+    bigram: HashMap<Label, UnigramModel>,
+    total: usize,
+}
+
+impl BigramModel {
+    pub fn new() -> BigramModel {
+        BigramModel {
+            bigram: HashMap::new(),
+            total: 0,
+        }
+    }
+
+    pub fn increment(&mut self, first: &Label, second: &Label) {
+        self.total += 1;
+        self.bigram
+            .entry(first.clone())
+            .or_insert(UnigramModel::new())
+            .increment(second);
+    }
+}
+
+pub struct MemoryHead {
+    pub previous: Option<Concept>,
+    pub ongoing: Vec<(Concept, usize)>,
+}
+
+impl MemoryHead {
+    pub fn new() -> MemoryHead {
+        MemoryHead {
+            previous: None,
+            ongoing: Vec::new(),
+        }
+    }
 }
 
 pub struct Dimension {
     level: u16,
     radius_scale: u16,
     resolution: u16,
-    stats: HashMap<Label, Stats>,
-    pub locations: HashMap<Label, Location>,
-    pub unigram: HashMap<Label, usize>,
-    bigram: HashMap<Label, HashMap<Label, usize>>,
-    pub total: usize,
-    prev: Label,
-    ongoing: Vec<C64>,
-    lengths: Vec<usize>,
-    current: Vec<Label>,
-    segments: Vec<Vec<Label>>,
-    relative_lengths: Vec<Vec<usize>>,
+    pub concepts: HashMap<Label, Concept>,
+    unigram: UnigramModel,
+    bigram: BigramModel,
+    pub head: MemoryHead,
 }
 
 impl Dimension {
     pub fn new(level: u16, radius_scale: u16, resolution: u16) -> Dimension {
+        let head = Concept::empty();
         Dimension {
             level,
             radius_scale,
             resolution,
-            stats: HashMap::new(),
-            locations: HashMap::new(),
-            unigram: HashMap::new(),
-            bigram: HashMap::new(),
-            total: 0,
-            prev: Label::new(),
-            ongoing: Vec::new(),
-            lengths: Vec::new(),
-            current: Vec::new(),
-            segments: Vec::new(),
-            relative_lengths: Vec::new(),
+            concepts: HashMap::new(),
+            unigram: UnigramModel::new(),
+            bigram: BigramModel::new(),
+            head: MemoryHead::new(),
         }
     }
 
     pub fn perceive(&mut self, spectrum: Spectrum) -> Option<Spectrum> {
-        let category = categorization::categorize(self, &spectrum);
-        self.update(&category, &spectrum);
-        if segmentation::segment(self, &category) {
-            let superior = abstraction::transform(&self.ongoing);
+        let concept: Concept = Concept::new(&spectrum, self.radius_scale as f64);
+        let category: Label = categorization::categorize(&self.concepts, &concept);
+        self.update(&category, concept);
+        let concept = self.concepts.get(&category).unwrap();
+        let previous = &self.head.previous.as_ref().unwrap().label;
+        if segmentation::segment(&self.unigram, &previous, &concept.label) {
+            let superior = abstraction::transform(&self.head.ongoing);
             return Some(superior);
+            ;
         }
-        self.prev = category;
+        self.head.previous = Some(concept.clone());
         None
     }
 
-    pub fn update(&mut self, category: &String, spectrum: &Spectrum) {}
+    pub fn update(&mut self, category: &Label, concept: Concept) {}
 }
 
 #[cfg(test)]
