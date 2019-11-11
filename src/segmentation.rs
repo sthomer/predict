@@ -1,7 +1,8 @@
-use crate::perception::{UnigramModel, Label};
+use crate::concept_symbol::Label;
+use crate::markov_model::{BigramModel, UnigramModel};
 use std::collections::HashMap;
 
-pub fn segment(unigram: &UnigramModel, previous: &Label, current: &Label) -> bool {
+pub fn segment(unigram: &UnigramModel<Label>, previous: &Label, current: &Label) -> bool {
     // Equivalent to comparing information content i.e. -log2(count/total)
     unigram.count(previous) > unigram.count(current)
 }

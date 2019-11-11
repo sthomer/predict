@@ -1,30 +1,33 @@
-use crate::perception::{Spectrum, Concept};
+use crate::concept_symbol::Concept;
 use ndarray::{Array, Axis, Dimension};
-use num::complex::Complex;
+use num::complex::Complex64;
 use std::f64::consts::PI;
 
-pub type C64 = Complex<f64>;
+pub struct Spectrum {
+    pub point: Complex64,
+    pub length: usize,
+}
 
-pub fn transform(trajectory: &Vec<(Concept, usize)>) -> Spectrum {
-    let signal: Vec<C64> = trajectory.iter().map(|(c, _)| c.location.centroid).collect();
+pub fn transform(trajectory: Vec<&Concept>) -> Spectrum {
+    let signal: Vec<Complex64> = trajectory.iter().map(|c| c.location.centroid).collect();
     let spectrum = fft(&signal);
     Spectrum {
-        point: C64::new(0.0, 0.0), // spectrum
+        point: Complex64::new(0.0, 0.0), // spectrum
         length: spectrum.len(),
     }
 }
 
-const SPEED: C64 = C64 {
+const SPEED: Complex64 = Complex64 {
     re: 0f64,
     im: -2.0 * PI,
 };
 
-pub fn to_c64(vs: Vec<f64>) -> Vec<C64> {
-    vs.iter().map(|v| C64::new(*v, 0f64)).collect()
+pub fn to_complex64(vs: Vec<f64>) -> Vec<Complex64> {
+    vs.iter().map(|v| Complex64::new(*v, 0f64)).collect()
 }
 
 /// 1D Fast Fourier Transform
-pub fn fft(vs: &Vec<C64>) -> Vec<C64> {
+pub fn fft(vs: &Vec<Complex64>) -> Vec<Complex64> {
     let n = vs.len();
     if n == 1 {
         return vs.clone();
@@ -43,7 +46,7 @@ pub fn fft(vs: &Vec<C64>) -> Vec<C64> {
             .collect();
         let f_even = fft(&evens);
         let f_odd = fft(&odds);
-        let mut combined: Vec<C64> = vec![C64::new(0f64, 0f64); n];
+        let mut combined: Vec<Complex64> = vec![Complex64::new(0f64, 0f64); n];
         let n_f64 = n as f64;
         for k in 0..n / 2 {
             let k_f64 = k as f64;
@@ -54,7 +57,7 @@ pub fn fft(vs: &Vec<C64>) -> Vec<C64> {
     }
 }
 
-//fn mdfft<D: Dimension>(vs: &Array<C64, D>) -> Array<C64, D> {
+//fn mdfft<D: Dimension>(vs: &Array<Complex64, D>) -> Array<Complex64, D> {
 //    let mut fs = vs.clone();
 //    for d in 0..vs.dim() {
 //        let size = fs.len_of(Axis(d));
@@ -65,12 +68,12 @@ pub fn fft(vs: &Vec<C64>) -> Vec<C64> {
 //}
 
 /// Naive 1D Discrete Fourier Transform
-fn dft(vs: &Vec<C64>) -> Vec<C64> {
-    let mut fs: Vec<C64> = Vec::new();
+fn dft(vs: &Vec<Complex64>) -> Vec<Complex64> {
+    let mut fs: Vec<Complex64> = Vec::new();
     let period = vs.len() as f64;
     for k in 0..vs.len() {
         let k = k as f64;
-        let mut f = C64::new(0f64, 0f64);
+        let mut f = Complex64::new(0f64, 0f64);
         for (n, v) in vs.iter().enumerate() {
             let n = n as f64;
             f += v * (SPEED * k * n / period).exp();
@@ -81,16 +84,16 @@ fn dft(vs: &Vec<C64>) -> Vec<C64> {
 }
 
 /// Naive ND Discrete Fourier Transform
-fn mddft<D: Dimension>(vs: &Array<C64, D>) -> Array<C64, D> {
+fn mddft<D: Dimension>(vs: &Array<Complex64, D>) -> Array<Complex64, D> {
     let mut fs = vs.clone();
     for d in 0..vs.ndim() {
         let size = fs.len_of(Axis(d));
         let period = size as f64;
         for mut lane in fs.lanes_mut(Axis(d)) {
-            let mut row: Vec<C64> = Vec::new();
+            let mut row: Vec<Complex64> = Vec::new();
             for k in 0..size {
                 let k = k as f64;
-                let mut f = C64::new(0f64, 0f64);
+                let mut f = Complex64::new(0f64, 0f64);
                 for (n, v) in lane.iter().enumerate() {
                     let n = n as f64;
                     f += v * (SPEED * k * n / period).exp();
@@ -112,7 +115,7 @@ mod tests {
 
     #[test]
     fn test() {
-        //        let samples = to_c64(&samples)[..128].to_vec();
+        //        let samples = to_Complex64(&samples)[..128].to_vec();
         //        let freqs_1d_dft = dft(&samples);
         //        let freqs_1d_fft = fft(&samples);
         //        let samples_arr = Array::from_vec(samples_vec);
