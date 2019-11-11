@@ -1,12 +1,13 @@
-use crate::abstraction::Spectrum;
+use crate::abstraction::{Tensor, Spectrum};
 use num::complex::Complex64;
 use rand;
 use rand::Rng;
 use std::hash::{Hash, Hasher};
+use ndarray::{Array, Axis, Dimension};
 
-pub fn gen_concept_symbol(spectrum: &Spectrum, radius: f64) -> (Label, Concept, Symbol) {
+pub fn gen_concept_symbol(spectrum: Spectrum, radius: f64) -> (Label, Concept, Symbol) {
     let label = generate_label();
-    let concept = Concept::new(spectrum, radius);
+    let concept = Concept::new(label, spectrum, radius);
     let symbol = Symbol::new(label);
     (label, concept, symbol)
 }
@@ -19,15 +20,15 @@ fn generate_label() -> Label {
 
 #[derive(Clone)]
 pub struct Moments {
-    sample_mean: Complex64,
-    sample_variance: Complex64,
-    prior_mean: Complex64,
-    prior_variance: Complex64,
+    sample_mean: Tensor,
+    sample_variance: Tensor,
+    prior_mean: Tensor,
+    prior_variance: Tensor,
 }
 
 #[derive(Clone)]
 pub struct Location {
-    pub centroid: Complex64,
+    pub centroid: Tensor,
     pub radius: f64,
 }
 
@@ -55,24 +56,24 @@ impl Hash for Concept {
 impl Concept {
     pub fn empty() -> Concept {
         let spectrum = Spectrum {
-            point: Complex64::new(0.0, 0.0),
+            point: Tensor::empty(),
             length: 0,
         };
-        Concept::new(&spectrum, 0.0)
+        Concept::new(0, spectrum, 0.0)
     }
 
-    pub fn new(spectrum: &Spectrum, radius: f64) -> Concept {
+    pub fn new(label: Label, spectrum: Spectrum, radius: f64) -> Concept {
         Concept {
-            label: generate_label(),
+            label,
             location: Location {
-                centroid: spectrum.point,
+                centroid: spectrum.clone().point,
                 radius: 0.0,
             },
             moments: Moments {
-                sample_mean: spectrum.point,
-                sample_variance: Complex64::new(0.0, 0.0),
-                prior_mean: spectrum.point,
-                prior_variance: Complex64::new((radius / 3.0).powi(2), 0.0),
+                sample_mean: spectrum.clone().point,
+                sample_variance: spectrum.clone().point, //Complex64::new(0.0, 0.0),
+                prior_mean: spectrum.clone().point,
+                prior_variance: spectrum.clone().point, //Complex64::new((radius / 3.0).powi(2), 0.0),
             },
         }
     }
@@ -89,7 +90,7 @@ pub struct Symbol {
 impl Symbol {
     pub fn new(label: Label) -> Symbol {
         Symbol {
-            label: label,
+            label,
             view: label.to_string(),
         }
     }

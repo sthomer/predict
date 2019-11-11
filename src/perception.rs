@@ -1,6 +1,6 @@
 use num::complex::Complex64;
 
-use crate::abstraction::Spectrum;
+use crate::abstraction::{Spectrum, Tensor};
 use crate::dimension::Dimension;
 use crate::Config;
 
@@ -19,7 +19,7 @@ pub fn process(config: &Config, signal: Vec<Complex64>) -> Vec<Dimension> {
 }
 
 fn perceive(dimensions: &mut Vec<Dimension>, point: Complex64) {
-    let mut spectrum = Spectrum { point, length: 1 };
+    let mut spectrum = Spectrum { point: Tensor::empty(), length: 1 };
     for dimension in dimensions.iter_mut() {
         match dimension.perceive(spectrum) {
             Some(result) => spectrum = result,

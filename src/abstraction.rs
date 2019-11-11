@@ -3,18 +3,40 @@ use ndarray::{Array, Axis, Dimension};
 use num::complex::Complex64;
 use std::f64::consts::PI;
 
+#[derive(Clone)]
+pub enum Tensor {
+    Value(Complex64),
+    Vector(Vec<Tensor>)
+}
+
+impl Tensor {
+    pub fn empty() -> Tensor {
+        Tensor::Value(Complex64::new(0.0, 0.0))
+    }
+    pub fn new(vs: Vec<Tensor>) -> Tensor {
+        Tensor::Vector(vs)
+    }
+}
+
+#[derive(Clone)]
 pub struct Spectrum {
-    pub point: Complex64,
+    pub point: Tensor,
     pub length: usize,
 }
 
 pub fn transform(trajectory: Vec<&Concept>) -> Spectrum {
-    let signal: Vec<Complex64> = trajectory.iter().map(|c| c.location.centroid).collect();
-    let spectrum = fft(&signal);
+    let signal: Vec<&Tensor> = trajectory.iter()
+        .map(|c| &c.location.centroid).collect();
+//    let spectrum = fft(&signal);
+    let spectrum = fourier(signal);
     Spectrum {
-        point: Complex64::new(0.0, 0.0), // spectrum
-        length: spectrum.len(),
+        point: Tensor::empty(),
+        length: trajectory.len(),
     }
+}
+
+pub fn fourier(signal: Vec<&Tensor>) -> Vec<&Tensor> {
+    signal
 }
 
 const SPEED: Complex64 = Complex64 {
