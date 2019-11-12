@@ -14,7 +14,7 @@ pub fn categorize(
     concepts
         .iter()
         .map(|(_, c)| c)
-//        .filter(|c| norm(c.location.centroid - concept.location.centroid) <= c.location.radius)
+        //        .filter(|c| norm(c.location.centroid - concept.location.centroid) <= c.location.radius)
         .min_by_key(|c| unigram.count(&c.label))
         .unwrap_or(concept)
         .label

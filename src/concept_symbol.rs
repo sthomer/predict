@@ -1,9 +1,9 @@
-use crate::abstraction::{Tensor, Spectrum};
+use crate::abstraction::Spectrum;
+use ndarray::{Array, Axis, Dimension};
 use num::complex::Complex64;
 use rand;
 use rand::Rng;
 use std::hash::{Hash, Hasher};
-use ndarray::{Array, Axis, Dimension};
 
 pub fn gen_concept_symbol(spectrum: Spectrum, radius: f64) -> (Label, Concept, Symbol) {
     let label = generate_label();
@@ -20,15 +20,15 @@ fn generate_label() -> Label {
 
 #[derive(Clone)]
 pub struct Moments {
-    sample_mean: Tensor,
-    sample_variance: Tensor,
-    prior_mean: Tensor,
-    prior_variance: Tensor,
+    sample_mean: Vec<Complex64>,
+    sample_variance: Vec<Complex64>,
+    prior_mean: Vec<Complex64>,
+    prior_variance: Vec<Complex64>,
 }
 
 #[derive(Clone)]
 pub struct Location {
-    pub centroid: Tensor,
+    pub centroid: Vec<Complex64>,
     pub radius: f64,
 }
 
@@ -56,7 +56,7 @@ impl Hash for Concept {
 impl Concept {
     pub fn empty() -> Concept {
         let spectrum = Spectrum {
-            point: Tensor::empty(),
+            point: Vec::new(),
             length: 0,
         };
         Concept::new(0, spectrum, 0.0)

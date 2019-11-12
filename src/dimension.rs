@@ -82,6 +82,7 @@ impl Dimension {
         }
     }
 
+    // TODO: Refactor
     pub fn perceive(&mut self, spectrum: Spectrum) -> Option<Spectrum> {
         let (label, concept, mut symbol) = gen_concept_symbol(spectrum, self.radius_scale);
         let category = categorization::categorize(&concept, &self.semantic.space, &self.unigram);

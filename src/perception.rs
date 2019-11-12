@@ -1,9 +1,22 @@
 use num::complex::Complex64;
-
-use crate::abstraction::{Spectrum, Tensor};
+use crate::abstraction::Spectrum;
 use crate::dimension::Dimension;
 use crate::Config;
 
+/// Generates a 4-level IDyOT memory from the input signal.
+///
+/// # Examples
+/// ```
+/// use predict::Config;
+/// let config = Config::default();
+/// let signal = vec![Complex64::new(1.0, 1.0); 100];
+/// let dimensions = process(&config, signal);
+/// ```
+///
+/// # Panics
+///
+/// # Errors
+///
 pub fn process(config: &Config, signal: Vec<Complex64>) -> Vec<Dimension> {
     let mut dimensions = vec![
         Dimension::new(0, 1.0 * config.radius_scale, config.resolution),
@@ -18,8 +31,19 @@ pub fn process(config: &Config, signal: Vec<Complex64>) -> Vec<Dimension> {
     dimensions
 }
 
+/// Updates all appropriate levels with the given point
+///
+/// # Examples
+///
+/// # Panics
+///
+/// # Errors
+///
 fn perceive(dimensions: &mut Vec<Dimension>, point: Complex64) {
-    let mut spectrum = Spectrum { point: Tensor::empty(), length: 1 };
+    let mut spectrum = Spectrum {
+        point: vec![point],
+        length: 1,
+    };
     for dimension in dimensions.iter_mut() {
         match dimension.perceive(spectrum) {
             Some(result) => spectrum = result,

@@ -2,41 +2,72 @@ use crate::concept_symbol::Concept;
 use ndarray::{Array, Axis, Dimension};
 use num::complex::Complex64;
 use std::f64::consts::PI;
+use std::ops::Mul;
 
-#[derive(Clone)]
-pub enum Tensor {
-    Value(Complex64),
-    Vector(Vec<Tensor>)
-}
-
-impl Tensor {
-    pub fn empty() -> Tensor {
-        Tensor::Value(Complex64::new(0.0, 0.0))
-    }
-    pub fn new(vs: Vec<Tensor>) -> Tensor {
-        Tensor::Vector(vs)
-    }
-}
+type Vector = Vec<Complex64>;
 
 #[derive(Clone)]
 pub struct Spectrum {
-    pub point: Tensor,
+    pub point: Vector,
     pub length: usize,
 }
 
 pub fn transform(trajectory: Vec<&Concept>) -> Spectrum {
-    let signal: Vec<&Tensor> = trajectory.iter()
-        .map(|c| &c.location.centroid).collect();
-//    let spectrum = fft(&signal);
+    let signal: Vec<Vector> = trajectory
+        .iter()
+        .map(|c| c.location.centroid.clone())
+        .collect();
     let spectrum = fourier(signal);
+    let vector = spectrum.into_iter().flatten().collect();
     Spectrum {
-        point: Tensor::empty(),
+        point: vector,
         length: trajectory.len(),
     }
 }
 
-pub fn fourier(signal: Vec<&Tensor>) -> Vec<&Tensor> {
-    signal
+// TODO: Deal with all the clones
+// TODO: Create struct for hold Vec<Vec<Complex>> and/or Vec<Complex>
+pub fn fourier(signal: Vec<Vector>) -> Vec<Vector> {
+    let n = signal.len();
+    if n == 1 {
+        return signal;
+    } else {
+        //        let (even, odd) = signal.into_iter().enumerate().partition(|&(i,_)| i % 2 == 0);
+        let evens = signal
+            .clone()
+            .into_iter()
+            .enumerate()
+            .filter(|&(i, _)| i % 2 == 0)
+            .map(|(_, v)| v)
+            .collect();
+        let odds = signal
+            .clone()
+            .into_iter()
+            .enumerate()
+            .filter(|&(i, _)| i % 2 != 0)
+            .map(|(_, v)| v)
+            .collect();
+        let f_even = fourier(evens);
+        let f_odd = fourier(odds);
+        let mut combined: Vec<Vector> = vec![Vec::new(); n];
+        for k in 0..n / 2 {
+            let omega = SPEED * k as f64 / n as f64;
+            let other: Vector = f_odd[k].clone().into_iter().map(|el| el * omega).collect();
+            combined[k] = f_even[k]
+                .clone()
+                .iter()
+                .zip(other.iter())
+                .map(|(l, r)| l + r)
+                .collect();
+            combined[k + n / 2] = f_even[k]
+                .clone()
+                .iter()
+                .zip(other.iter())
+                .map(|(l, r)| l - r)
+                .collect();
+        }
+        combined
+    }
 }
 
 const SPEED: Complex64 = Complex64 {
