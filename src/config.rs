@@ -29,6 +29,10 @@ impl Config {
     }
 
     /// Returns a Config parameterized by the given command-line arguments.
+    ///
+    /// # Arguments
+    /// * `args` - list of string arguments from the command-line
+    ///
     pub fn new(args: &[String]) -> Result<Config, &'static str> {
         unimplemented!();
         // TODO: Parse arguments

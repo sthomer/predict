@@ -5,6 +5,10 @@ use crate::Config;
 
 /// Generates a 4-level IDyOT memory from the input signal.
 ///
+/// # Arguments
+/// * `config` - configuration for scale, resolution, and depth
+/// * `signal` - input signal to process into memory
+///
 /// # Examples
 /// ```
 /// use predict::Config;
@@ -12,10 +16,6 @@ use crate::Config;
 /// let signal = vec![Complex64::new(1.0, 1.0); 100];
 /// let dimensions = process(&config, signal);
 /// ```
-///
-/// # Panics
-///
-/// # Errors
 ///
 pub fn process(config: &Config, signal: Vec<Complex64>) -> Vec<Dimension> {
     let mut dimensions = vec![
@@ -32,6 +32,10 @@ pub fn process(config: &Config, signal: Vec<Complex64>) -> Vec<Dimension> {
 }
 
 /// Updates all appropriate levels with the given point
+///
+/// # Arguments
+/// * `dimensions` - dimensions of the memory
+/// * `point` - current value in signal that is added to the dimensions
 ///
 /// # Examples
 ///

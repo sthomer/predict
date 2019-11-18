@@ -1,7 +1,9 @@
 use crate::abstraction::Spectrum;
 use crate::concept_symbol::{gen_concept_symbol, Concept, Label, Symbol};
 use crate::markov_model::{BigramModel, UnigramModel};
-use crate::{abstraction, categorization, segmentation};
+use crate::categorization::categorize;
+use crate::segmentation::segment;
+use crate::abstraction::transform;
 use std::collections::HashMap;
 
 /// Records the most recent symbol and unfinished sequence of a segment
@@ -18,7 +20,7 @@ impl MemoryHead {
         MemoryHead {
             previous: Symbol {
                 label: 0,
-                view: "start".to_string(),
+                content: "start".to_string(),
             },
             ongoing: Vec::new(),
         }
@@ -47,12 +49,6 @@ impl EpisodicMemory {
     /// # Arguments
     /// * `symbol` - The new symbol to add into the episodic memory
     ///
-    /// # Examples
-    ///
-    /// # Panics
-    ///
-    /// # Errors
-    ///
     fn update(&mut self, symbol: Symbol) {
         self.sequence.push(symbol.clone());
         self.head.ongoing.push(symbol.clone());
@@ -79,12 +75,6 @@ impl SemanticMemory {
     /// # Arguments
     /// * `category` - category label of where to insert the given concept
     /// * `concept` - instance of a concept to insert and update with
-    ///
-    /// # Examples
-    ///
-    /// # Panics
-    ///
-    /// # Errors
     ///
     fn update(&mut self, category: &Label, concept: Concept) {
         let c = self.space.entry(*category).or_insert(concept.clone());
@@ -113,6 +103,12 @@ pub struct Dimension {
 
 impl Dimension {
     /// Returns a dimension with empty memories and markov models
+    ///
+    /// # Arguments
+    /// * `level` - index of depth in memory hierarchy
+    /// * `radius_scale` - scale of initial radius of a concept
+    /// * `resolution` - number of real + virtual points in a segment
+    ///
     pub fn new(level: u16, radius_scale: f64, resolution: u16) -> Dimension {
         let head = Concept::empty();
         Dimension {
@@ -134,13 +130,11 @@ impl Dimension {
     pub fn perceive(&mut self, spectrum: Spectrum) -> Option<Spectrum> {
 
         // Create a new symbol/concept with a label
-        let (label, concept, mut symbol) = gen_concept_symbol(spectrum,
-                                                              self.radius_scale);
+        let (label, concept, mut symbol) =
+            gen_concept_symbol(spectrum,self.radius_scale);
 
         // Categorize the concept in the semantic space and update that category
-        let category = categorization::categorize(&concept,
-                                                  &self.semantic.space,
-                                                  &self.unigram);
+        let category = categorize(&concept, &self.semantic.space, &self.unigram);
         symbol.label = category;
         self.semantic.update(&category, concept);
 
@@ -150,10 +144,10 @@ impl Dimension {
         self.bigram.increment(&previous, &category);
 
         // Determine if segmentation should occur at this symbol
-        if segmentation::segment(&self.unigram, &previous, &category) {
+        if segment(&self.unigram, &previous, &category) {
 
             // Abstract the trajectory of the segment to a spectrum
-            let superior = abstraction::transform(self.current_trajectory());
+            let superior = transform(self.current_trajectory());
             return Some(superior);
         }
 
@@ -169,4 +163,12 @@ impl Dimension {
             .map(|l| self.semantic.space.get(&l).unwrap())
             .collect()
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test() {}
 }

@@ -5,6 +5,12 @@ use rand;
 use rand::Rng;
 use std::hash::{Hash, Hasher};
 
+/// Generates a label, concept, and symbol from spectrum
+///
+/// # Arguments
+/// * `spectrum` - representation to generate for
+/// * `radius` - initial radius of the concept
+///
 pub fn gen_concept_symbol(spectrum: Spectrum, radius: f64) -> (Label, Concept, Symbol) {
     let label = generate_label();
     let concept = Concept::new(label, spectrum, radius);
@@ -12,33 +18,51 @@ pub fn gen_concept_symbol(spectrum: Spectrum, radius: f64) -> (Label, Concept, S
     (label, concept, symbol)
 }
 
+/// Identifier connecting semantic concepts to episodic symbols
 pub type Label = usize;
 
+// TODO: Ensure no label repetition in a given dimension
+/// Generates a random label
 fn generate_label() -> Label {
     rand::thread_rng().gen()
 }
 
+/// First and second statistical moments specifying a multidimensional Gaussian
+/// Used for updating the categorical region after a new concept is added.
 #[derive(Clone)]
 pub struct Moments {
+    /// Sample mean (first sample moment)
     sample_mean: Vec<Complex64>,
+    /// Sample variance (second sample moment)
     sample_variance: Vec<Complex64>,
+    /// Prior mean (first prior moment)
     prior_mean: Vec<Complex64>,
+    /// Prior variance (second prior moment)
     prior_variance: Vec<Complex64>,
 }
 
+/// Specifies the location and volume of a concept.
+/// Used for caching the centroid and radius, since these don't change often.
 #[derive(Clone)]
 pub struct Location {
+    /// Center of the concept
     pub centroid: Vec<Complex64>,
+    /// Radius of the concept
     pub radius: f64,
 }
 
+/// Representation of a category in the semantic space
 #[derive(Clone)]
 pub struct Concept {
+    /// Identifier of the concept
     pub label: Label,
+    /// Cached location and volume of the concept/category
     pub location: Location,
+    /// Multidimensional Gaussian represented the concept's distribution
     pub moments: Moments,
 }
 
+/// Two concepts are equal if they have the same label
 impl PartialEq for Concept {
     fn eq(&self, other: &Self) -> bool {
         self.label == other.label
@@ -54,6 +78,7 @@ impl Hash for Concept {
 }
 
 impl Concept {
+    /// Returns an empty concept without spectrum or length
     pub fn empty() -> Concept {
         let spectrum = Spectrum {
             point: Vec::new(),
@@ -62,6 +87,13 @@ impl Concept {
         Concept::new(0, spectrum, 0.0)
     }
 
+    /// Returns a new concept.
+    ///
+    /// # Arguments
+    /// * `label` - identifier
+    /// * `spectrum` - representation of the concept
+    /// * `radius` - initial radius of the category
+    ///
     pub fn new(label: Label, spectrum: Spectrum, radius: f64) -> Concept {
         Concept {
             label,
@@ -78,20 +110,41 @@ impl Concept {
         }
     }
 
+    /// Posterior update of the Gaussian representing the category.
+    ///
+    /// # Arguments
+    /// * `concept` - concept to be update the moments with
+    ///
     pub fn update(&mut self, concept: Concept) {}
 }
 
+/// Representation of a category in episodic space
 #[derive(Clone)]
 pub struct Symbol {
+    /// Identifier of the symbol
     pub label: Label,
-    pub view: String,
+    /// Content of the symbol
+    pub content: String,
 }
 
 impl Symbol {
+    /// Returns a new symbol with the content the same as the identifier
+    ///
+    /// # Arguments
+    /// * `label` - identifier for the symbol
+    ///
     pub fn new(label: Label) -> Symbol {
         Symbol {
             label,
-            view: label.to_string(),
+            content: label.to_string(),
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test() {}
 }
