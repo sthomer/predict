@@ -43,11 +43,8 @@ pub fn process(config: &Config, signal: Vec<Complex64>) -> Vec<Dimension> {
 ///
 /// # Errors
 ///
-fn perceive(dimensions: &mut Vec<Dimension>, point: Complex64) {
-    let mut spectrum = Spectrum {
-        point: vec![point],
-        length: 1,
-    };
+fn perceive(dimensions: &mut Vec<Dimension>, value: Complex64) {
+    let mut spectrum = Spectrum::point(value);
     for dimension in dimensions.iter_mut() {
         match dimension.perceive(spectrum) {
             Some(result) => spectrum = result,

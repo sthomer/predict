@@ -1,4 +1,4 @@
-use crate::abstraction::Spectrum;
+use crate::abstraction::{Spectrum, Signal, Vector};
 use ndarray::{Array, Axis, Dimension};
 use num::complex::Complex64;
 use rand;
@@ -32,13 +32,13 @@ fn generate_label() -> Label {
 #[derive(Clone)]
 pub struct Moments {
     /// Sample mean (first sample moment)
-    sample_mean: Vec<Complex64>,
+    sample_mean: Vector,
     /// Sample variance (second sample moment)
-    sample_variance: Vec<Complex64>,
+    sample_variance: Vector,
     /// Prior mean (first prior moment)
-    prior_mean: Vec<Complex64>,
+    prior_mean: Vector,
     /// Prior variance (second prior moment)
-    prior_variance: Vec<Complex64>,
+    prior_variance: Vector,
 }
 
 /// Specifies the location and volume of a concept.
@@ -46,7 +46,7 @@ pub struct Moments {
 #[derive(Clone)]
 pub struct Location {
     /// Center of the concept
-    pub centroid: Vec<Complex64>,
+    pub centroid: Vector,
     /// Radius of the concept
     pub radius: f64,
 }
@@ -81,7 +81,7 @@ impl Concept {
     /// Returns an empty concept without spectrum or length
     pub fn empty() -> Concept {
         let spectrum = Spectrum {
-            point: Vec::new(),
+            point: Vector::new(),
             length: 0,
         };
         Concept::new(0, spectrum, 0.0)
@@ -115,7 +115,9 @@ impl Concept {
     /// # Arguments
     /// * `concept` - concept to be update the moments with
     ///
-    pub fn update(&mut self, concept: Concept) {}
+    pub fn update(&mut self, concept: Concept) {
+        let mut moments = self.moments.clone();
+    }
 }
 
 /// Representation of a category in episodic space
