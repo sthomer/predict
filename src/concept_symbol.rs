@@ -1,5 +1,4 @@
-use crate::abstraction::{Spectrum, Signal, Vector};
-use ndarray::{Array, Axis, Dimension};
+use crate::spectrum::{Spectrum, Vector};
 use num::complex::Complex64;
 use rand;
 use rand::Rng;
@@ -11,11 +10,11 @@ use std::hash::{Hash, Hasher};
 /// * `spectrum` - representation to generate for
 /// * `radius` - initial radius of the concept
 ///
-pub fn gen_concept_symbol(spectrum: Spectrum, radius: f64) -> (Label, Concept, Symbol) {
+pub fn gen_concept_symbol(spectrum: Spectrum, radius: f64) -> (Concept, Symbol) {
     let label = generate_label();
     let concept = Concept::new(label, spectrum, radius);
     let symbol = Symbol::new(label);
-    (label, concept, symbol)
+    (concept, symbol)
 }
 
 /// Identifier connecting semantic concepts to episodic symbols
@@ -39,6 +38,17 @@ pub struct Moments {
     prior_mean: Vector,
     /// Prior variance (second prior moment)
     prior_variance: Vector,
+}
+
+impl Moments {
+    pub fn empty() -> Moments {
+        Moments {
+            sample_mean: Vector::empty(),
+            sample_variance: Vector::empty(),
+            prior_mean: Vector::empty(),
+            prior_variance: Vector::empty(),
+        }
+    }
 }
 
 /// Specifies the location and volume of a concept.
@@ -81,7 +91,7 @@ impl Concept {
     /// Returns an empty concept without spectrum or length
     pub fn empty() -> Concept {
         let spectrum = Spectrum {
-            point: Vector::new(),
+            point: Vector::empty(),
             length: 0,
         };
         Concept::new(0, spectrum, 0.0)
@@ -117,38 +127,32 @@ impl Concept {
     /// * `count` - number of times the category has been seen
     ///
     pub fn update(&mut self, concept: Concept, count: usize) {
-        let mut m = self.moments.clone();
+        let m = self.moments.clone();
         let x = concept.location.centroid.clone();
+        let mut u = Moments::empty();
 
-        let sample_mean = m.sample_mean + (x - m.sample_mean) / count;
-        let sample_variance = if count == 1 { m.sample_variance } else {
-            m.sample_variance +
-                ((x - sample_mean) * (x - m.sample_mean) - m.sample_variance)
-                    / count
+        u.sample_mean = &m.sample_mean + (&x - &m.sample_mean) / count;
+        u.sample_variance = if count == 1 { m.sample_variance } else {
+            &m.sample_variance +
+                (-&m.sample_variance + (&x - &u.sample_mean) * (&x - &m.sample_mean)) / count
         };
-        let prior_mean;
-        let prior_variance;
-        if false { // m.prior_variance + sample_variance ~= 0
-            prior_mean = m.prior_mean;
-            prior_variance = m.prior_variance;
+        if (&m.prior_variance + &u.sample_variance).is_zero() {
+            u.prior_mean = m.prior_mean;
+            u.prior_variance = m.prior_variance;
         } else {
-            prior_mean = (sample_mean * m.prior_mean + m.prior_variance * x)
-                / (m.prior_variance + sample_variance);
-            prior_variance = if count == 1 { m.prior_variance } else {
-                sample_variance * m.prior_variance
-                    / (sample_variance + m.prior_variance)
+            u.prior_mean = (&u.sample_mean * &m.prior_mean + &m.prior_variance * &x)
+                / (&m.prior_variance + &u.sample_variance);
+            u.prior_variance = if count == 1 { m.prior_variance } else {
+                &u.sample_variance * &m.prior_variance
+                    / (&u.sample_variance + &m.prior_variance)
             }
         }
         let location = Location {
-            centroid: prior_mean,
-            radius: (prior_mean.sqrt() * Complex64::new(3f64, 0f64)).norm(),
-        };
-        let moments = Moments {
-            sample_mean, sample_variance,
-            prior_mean, prior_variance,
+            centroid: u.prior_mean.clone(),
+            radius: (u.prior_mean.clone().sqrt() * Complex64::new(3f64, 0f64)).norm(),
         };
         self.location = location;
-        self.moments = moments;
+        self.moments = u;
     }
 }
 

@@ -1,9 +1,6 @@
 use num::complex::Complex64;
 use std::collections::HashMap;
-
-use crate::abstraction::Spectrum;
 use crate::concept_symbol::{Concept, Label};
-use crate::dimension::Dimension;
 use crate::markov_model::UnigramModel;
 
 /// Returns the label of the category to which the given concept belongs.

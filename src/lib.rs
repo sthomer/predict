@@ -11,6 +11,7 @@ mod markov_model;
 mod perception;
 mod segmentation;
 mod serialization;
+mod spectrum;
 
 pub use crate::config::Config;
 

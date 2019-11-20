@@ -1,6 +1,5 @@
 use crate::concept_symbol::Label;
 use crate::markov_model::{BigramModel, UnigramModel};
-use std::collections::HashMap;
 
 /// Determines whether to segment at the current position
 ///

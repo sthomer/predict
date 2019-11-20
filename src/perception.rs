@@ -1,5 +1,5 @@
 use num::complex::Complex64;
-use crate::abstraction::Spectrum;
+use crate::spectrum::Spectrum;
 use crate::dimension::Dimension;
 use crate::Config;
 

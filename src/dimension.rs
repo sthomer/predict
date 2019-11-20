@@ -1,4 +1,4 @@
-use crate::abstraction::Spectrum;
+use crate::spectrum::Spectrum;
 use crate::concept_symbol::{gen_concept_symbol, Concept, Label, Symbol};
 use crate::markov_model::{BigramModel, UnigramModel};
 use crate::categorization::categorize;
@@ -130,8 +130,7 @@ impl Dimension {
     pub fn perceive(&mut self, spectrum: Spectrum) -> Option<Spectrum> {
 
         // Create a new symbol/concept with a label
-        let (label, concept, mut symbol) =
-            gen_concept_symbol(spectrum,self.radius_scale);
+        let (concept, mut symbol) = gen_concept_symbol(spectrum, self.radius_scale);
 
         // Categorize the concept in the semantic space
         let category = categorize(&concept, &self.semantic.space, &self.unigram);
