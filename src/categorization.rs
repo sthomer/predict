@@ -43,7 +43,7 @@ fn member(category: &Concept, target: &Concept) -> bool {
 /// # Arguments
 /// * `point` - vector representation
 ///
-fn norm(point: Complex64) -> f64 {
+pub fn norm(point: Complex64) -> f64 {
     point.norm()
 }
 

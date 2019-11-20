@@ -76,9 +76,9 @@ impl SemanticMemory {
     /// * `category` - category label of where to insert the given concept
     /// * `concept` - instance of a concept to insert and update with
     ///
-    fn update(&mut self, category: &Label, concept: Concept) {
+    fn update(&mut self, category: &Label, concept: Concept, count: usize) {
         let c = self.space.entry(*category).or_insert(concept.clone());
-        c.update(concept);
+        c.update(concept, count);
     }
 }
 
@@ -133,15 +133,17 @@ impl Dimension {
         let (label, concept, mut symbol) =
             gen_concept_symbol(spectrum,self.radius_scale);
 
-        // Categorize the concept in the semantic space and update that category
+        // Categorize the concept in the semantic space
         let category = categorize(&concept, &self.semantic.space, &self.unigram);
         symbol.label = category;
-        self.semantic.update(&category, concept);
 
         // Update the markov models of the resulting category
         self.unigram.increment(&category);
         let previous = self.episodic.head.previous.label;
         self.bigram.increment(&previous, &category);
+
+        // Update the category with the new concept
+        self.semantic.update(&category, concept, self.unigram[category]);
 
         // Determine if segmentation should occur at this symbol
         if segment(&self.unigram, &previous, &category) {

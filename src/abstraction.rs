@@ -1,7 +1,7 @@
 use crate::concept_symbol::Concept;
 use num::complex::Complex64;
 use std::f64::consts::PI;
-use std::ops::{Add, Sub, Index, IndexMut};
+use std::ops::{Add, Sub, Mul, Div, Index, IndexMut};
 use itertools::{Itertools, Either, zip};
 use std::iter::{IntoIterator, FromIterator};
 use std::vec::IntoIter;
@@ -73,6 +73,14 @@ impl Vector {
     fn push(&mut self, elem: Complex64) {
         self.0.push(elem);
     }
+
+    pub fn norm(self) -> f64 {
+        self.0.into_iter().map(|c| (c * c.conj()).norm()).sum()
+    }
+
+    pub fn sqrt(self) -> Vector {
+        self.0.into_iter().map(|c| c.sqrt()).collect()
+    }
 }
 
 impl IntoIterator for Vector {
@@ -107,6 +115,40 @@ impl Sub for Vector {
 
     fn sub(self, rhs: Vector) -> Self {
         zip(self.0, rhs.0).map(|(l,r)| l + r).collect()
+    }
+}
+
+// TODO: Should multiplication be conjugate?
+impl Mul for Vector {
+    type Output = Self;
+
+    fn mul(self, rhs: Self) -> Self {
+        zip(self.0, rhs.0).map(|(l,r)| l * r).collect()
+    }
+}
+
+// TODO: Should multiplication be conjugate?
+impl Mul<Complex64> for Vector {
+    type Output = Self;
+
+    fn mul(self, rhs: Complex64) -> Self {
+        self.0.into_iter().map(|c| c * rhs).collect()
+    }
+}
+
+impl Div for Vector {
+    type Output = Self;
+
+    fn div(self, rhs: Self) -> Self {
+        zip(self.0, rhs.0).map(|(l,r)| l / r).collect()
+    }
+}
+
+impl Div<usize> for Vector {
+    type Output = Self;
+
+    fn div(self, rhs: usize) -> Self {
+        self.0.into_iter().map(|c| c / rhs as f64).collect()
     }
 }
 
@@ -167,8 +209,7 @@ fn fourier(mut signal: Signal) -> Signal {
             // TODO: Can the clones be minimized?
             let omega = // i.e. ω_k =-2πik/N
                 Complex64::new(0f64, -2f64 * PI) * k as f64 / n as f64;
-            let other: Vector = f_odd[k].clone().into_iter()
-                .map(|el| el * omega).collect();
+            let other: Vector = f_odd[k].clone() * omega;
             combined[k] = f_even[k].clone() + other.clone();
             combined[k + n / 2] = f_even[k].clone() - other;
         }

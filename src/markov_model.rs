@@ -1,6 +1,7 @@
 use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::HashMap;
 use std::hash::Hash;
+use std::ops::Index;
 
 /// Counts the number of times a given (length 1) key has been seen
 pub struct UnigramModel<K>
@@ -43,6 +44,17 @@ where
             Some(count) => *count,
             None => 0,
         }
+    }
+}
+
+impl<K> Index<K> for UnigramModel<K>
+where
+    K: Eq + Hash + Copy,
+{
+    type Output = usize;
+
+    fn index(&self, index: K) -> &Self::Output {
+        &self.unigram.get(&index).unwrap()
     }
 }
 
