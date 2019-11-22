@@ -1,9 +1,9 @@
-use crate::spectrum::Spectrum;
+use crate::spectrum::{Spectrum, Signal, Vector};
 use crate::concept_symbol::{gen_concept_symbol, Concept, Label, Symbol};
 use crate::markov_model::{BigramModel, UnigramModel};
 use crate::categorization::categorize;
 use crate::segmentation::segment;
-use crate::abstraction::transform;
+use crate::abstraction::{transform, interpolate};
 use std::collections::HashMap;
 
 /// Records the most recent symbol and unfinished sequence of a segment
@@ -21,6 +21,7 @@ impl MemoryHead {
             previous: Symbol {
                 label: 0,
                 content: "start".to_string(),
+                length: 0,
             },
             ongoing: Vec::new(),
         }
@@ -122,7 +123,6 @@ impl Dimension {
         }
     }
 
-    // TODO: Refactor
     /// Main step of the perception loop.
     /// Inserts the spectrum (from the subordinate layer) as a symbol/concept,
     /// then categorizes, updates, and segments the resulting memory.
@@ -147,8 +147,12 @@ impl Dimension {
         // Determine if segmentation should occur at this symbol
         if segment(&self.unigram, &previous, &category) {
 
+            // Convert segment to trajectory and interpolate to a signal
+            let trajectory = self.current_trajectory();
+            let signal = interpolate(trajectory, self.resolution);
+
             // Abstract the trajectory of the segment to a spectrum
-            let superior = transform(self.current_trajectory());
+            let superior = transform(signal);
             return Some(superior);
         }
 
@@ -157,11 +161,12 @@ impl Dimension {
         None
     }
 
-    /// Return a trajectory of concepts corresponding to the current segment
-    fn current_trajectory(&self) -> Vec<&Concept> {
+    /// Return a list of vector-length pairs corresponding to the current segment
+    fn current_trajectory(&self) -> Vec<(Vector, usize)> {
         self.episodic.head.ongoing.iter()
-            .map(|s| s.label)
-            .map(|l| self.semantic.space.get(&l).unwrap())
+            .map(|symbol| (symbol.label, symbol.length))
+            .map(|(label, length)| (self.semantic.space.get(&label).unwrap(), length))
+            .map(|(concept, length)| (concept.location.centroid.clone(), length))
             .collect()
     }
 }

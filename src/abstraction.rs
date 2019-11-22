@@ -4,22 +4,16 @@ use num::complex::Complex64;
 use std::f64::consts::PI;
 use itertools::{Itertools, Either};
 
-/// Returns the spectrum of the given trajectory through semantic space
+/// Returns the spectrum of the given signal
 ///
 /// # Arguments
-/// * `trajectory` - ordered sequence of concepts corresponding to a segment
+/// * `signal` - time-domain signal of which to find the frequency-domain spectrum
 ///
-pub fn transform(trajectory: Vec<&Concept>) -> Spectrum {
-    let vectors: Vec<Vector> = trajectory.iter()
-        .map(|c| c.location.centroid.clone())
-        .collect();
-    let signal = Signal::from(vectors);
+pub fn transform(signal: Signal) -> Spectrum {
+    let length = signal.len();
     let spectrum = fourier(signal);
-    let vector = spectrum.into_iter().flatten().collect();
-    Spectrum {
-        point: vector,
-        length: trajectory.len(),
-    }
+    let point = spectrum.into_iter().flatten().collect();
+    Spectrum { point, length, }
 }
 
 /// Fast fourier transform from time domain to frequency domain
@@ -47,6 +41,36 @@ fn fourier(signal: Signal) -> Signal {
         }
         combined
     }
+}
+
+// TODO: Refactor
+pub fn interpolate(trajectory: Vec<(Vector, usize)>, resolution: u16) -> Signal {
+    // Cumulative sum
+    let mut spread: Vec<(Vector, usize)> = Vec::new();
+    let mut i = 0;
+    for (v, l) in trajectory.into_iter() {
+        spread.push((v, i));
+        i += l;
+    }
+    // Spread into indices with max length of resolution
+    let total = spread.last().unwrap().1;
+    spread = spread.into_iter()
+        .map(|(v,l)| (v, l / total * resolution as usize))
+        .collect();
+
+    // Unfilled indices get value of the previous index => stepwise signal
+    let mut vectors: Vec<Vector> = Vec::new();
+    let mut repeat = spread.first().unwrap().0.clone();
+    for k in 0..resolution {
+        if let Some((v,i)) = spread.first() {
+            repeat = v.clone();
+            spread.remove(0);
+        }
+        vectors.push(repeat.clone());
+    }
+
+    // Turn into signal
+    Signal::from(vectors)
 }
 
 #[cfg(test)]

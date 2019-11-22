@@ -12,8 +12,8 @@ use std::hash::{Hash, Hasher};
 ///
 pub fn gen_concept_symbol(spectrum: Spectrum, radius: f64) -> (Concept, Symbol) {
     let label = generate_label();
-    let concept = Concept::new(label, spectrum, radius);
-    let symbol = Symbol::new(label);
+    let concept = Concept::new(label, spectrum.point, radius);
+    let symbol = Symbol::new(label, spectrum.length);
     (concept, symbol)
 }
 
@@ -94,7 +94,7 @@ impl Concept {
             point: Vector::empty(),
             length: 0,
         };
-        Concept::new(0, spectrum, 0.0)
+        Concept::new(0, spectrum.point, 0.0)
     }
 
     /// Returns a new concept.
@@ -104,18 +104,18 @@ impl Concept {
     /// * `spectrum` - representation of the concept
     /// * `radius` - initial radius of the category
     ///
-    pub fn new(label: Label, spectrum: Spectrum, radius: f64) -> Concept {
+    pub fn new(label: Label, vector: Vector, radius: f64) -> Concept {
         Concept {
             label,
             location: Location {
-                centroid: spectrum.clone().point,
+                centroid: vector.clone(),
                 radius: 0.0,
             },
             moments: Moments {
-                sample_mean: spectrum.clone().point,
-                sample_variance: spectrum.clone().point, //Complex64::new(0.0, 0.0),
-                prior_mean: spectrum.clone().point,
-                prior_variance: spectrum.clone().point, //Complex64::new((radius / 3.0).powi(2), 0.0),
+                sample_mean: vector.clone(),
+                sample_variance: vector.clone(), //Complex64::new(0.0, 0.0),
+                prior_mean: vector.clone(),
+                prior_variance: vector.clone(), //Complex64::new((radius / 3.0).powi(2), 0.0),
             },
         }
     }
@@ -163,6 +163,8 @@ pub struct Symbol {
     pub label: Label,
     /// Content of the symbol
     pub content: String,
+    /// Number of symbols subtended by this symbol
+    pub length: usize,
 }
 
 impl Symbol {
@@ -171,10 +173,11 @@ impl Symbol {
     /// # Arguments
     /// * `label` - identifier for the symbol
     ///
-    pub fn new(label: Label) -> Symbol {
+    pub fn new(label: Label, length: usize) -> Symbol {
         Symbol {
             label,
             content: label.to_string(),
+            length,
         }
     }
 }
