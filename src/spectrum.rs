@@ -23,22 +23,36 @@ impl Spectrum {
     }
 }
 
+/// Sequence of vectors in either the time or frequency domain
 #[derive(Default)]
 pub struct Signal(Vec<Vector>);
 
 impl Signal {
+    /// Returns an empty signal of length n (with empty vectors)
+    ///
+    /// # Arguments
+    /// * `n` - number of available slots in the signal
     pub fn new(n: usize) -> Signal {
         Signal(vec![Vector::empty(); n])
     }
 
+    /// Returns a signal filled with given vectors
+    ///
+    /// # Arguments
+    /// * `vectors` - vectors to fill the signal with
     pub fn from(vectors: Vec<Vector>) -> Signal {
         Signal(vectors)
     }
 
+    /// Number of elements in the signal
     pub fn len(&self) -> usize {
         self.0.len()
     }
 
+    /// Appends the vector to the end of the signal
+    ///
+    /// # Arguments
+    /// * `elem` - vector to add to the end of the signal
     fn push(&mut self, elem: Vector) {
         self.0.push(elem);
     }
@@ -74,32 +88,45 @@ impl IndexMut<usize> for Signal {
     }
 }
 
-/// Complex vector representation for a spectrum.
-/// Behaves mostly like a scalar.
+/// Complex vector representation for a spectrum with the standard semantics
+/// of a vector (i.e. component-wise operations, scalar multiplication, etc.)
 #[derive(Clone)]
 pub struct Vector(Vec<Complex64>);
 
 impl Vector {
+    /// Returns an empty vector
     pub fn empty() -> Vector {
         Vector(Vec::new())
     }
 
+    /// Returns a vector filled with the provided complex values
+    ///
+    /// # Arguments
+    /// * `vector` - complex values to put in the vector
     pub fn from(vector: Vec<Complex64>) -> Vector {
         Vector(vector)
     }
 
+    /// Appends the value to the end of the vector
+    ///
+    /// # Arguments
+    /// * `elem` - complex value to add to the end of the vector
     fn push(&mut self, elem: Complex64) {
         self.0.push(elem);
     }
 
-    pub fn norm(self) -> f64 {
-        self.0.into_iter().map(|c| (c * c.conj()).norm()).sum()
+    /// Length of the vector according to the Euclidian inner product
+    pub fn norm(&self) -> f64 {
+        self.0.iter().map(|c| (c * c.conj()).norm()).sum()
     }
 
-    pub fn sqrt(self) -> Vector {
-        self.0.into_iter().map(|c| c.sqrt()).collect()
+    /// Square root of each element in the vector
+    /// formula: sqrt(r e^(it)) = sqrt(r) e^(it/2)
+    pub fn sqrt(&self) -> Vector {
+        self.0.iter().map(|c| c.sqrt()).collect()
     }
 
+    /// Decides if the vector is composed of all zeros
     pub fn is_zero(&self) -> bool {
         self.0.iter().map(|c| AbsDiff::default().eq(&0f64, &c.norm())).all_equal()
     }

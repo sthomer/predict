@@ -1,3 +1,5 @@
+use num::complex::Complex64;
+
 /// Configuration for loading/saving, as well as parameter dimensions
 pub struct Config {
     /// Path of WAV file to load audio from
@@ -10,9 +12,10 @@ pub struct Config {
     pub radius_scale: f64,
     /// Number of real + virtual concepts in a trajectory
     pub resolution: u16,
-    /// Maximum number of dimensions in the memory.  Since each additional level
-    /// is exponentially more expensive, this can be used to limit computation.
+    /// Maximum number of dimensions in the memory
     pub max_depth: u16,
+    /// Type of input data, i.e. numeric or symbolic
+    pub input_type: InputType,
 }
 
 impl Config {
@@ -25,6 +28,7 @@ impl Config {
             radius_scale: 1.0,
             resolution: 256,
             max_depth: 4,
+            input_type: InputType::Audio,
         })
     }
 
@@ -35,16 +39,18 @@ impl Config {
     ///
     pub fn new(args: &[String]) -> Result<Config, &'static str> {
         unimplemented!();
-        // TODO: Parse arguments
-        Ok(Config {
-            load_from: "".to_string(),
-            save_at: "".to_string(),
-            init_with: "".to_string(),
-            radius_scale: 1.0,
-            resolution: 256,
-            max_depth: 4,
-        })
+        // TODO: Parse arguments and create config
     }
+}
+
+pub enum InputType {
+    Audio,
+    Text,
+}
+
+pub enum InputElement {
+    Audio(Complex64),
+    Text(String),
 }
 
 #[cfg(test)]

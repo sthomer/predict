@@ -172,6 +172,7 @@ impl Symbol {
     ///
     /// # Arguments
     /// * `label` - identifier for the symbol
+    /// * `length` - number of subtended subordinate symbols
     ///
     pub fn new(label: Label, length: usize) -> Symbol {
         Symbol {

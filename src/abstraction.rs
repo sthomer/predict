@@ -44,6 +44,12 @@ fn fourier(signal: Signal) -> Signal {
 }
 
 // TODO: Refactor
+/// Returns a signal with resolution length that represents the trajectory
+///
+/// # Arguments
+/// * `trajectory` - pairs of vectors and their subtended length
+/// * `resolution` - number of elements in the output signal
+///
 pub fn interpolate(trajectory: Vec<(Vector, usize)>, resolution: u16) -> Signal {
     // Cumulative sum
     let mut spread: Vec<(Vector, usize)> = Vec::new();

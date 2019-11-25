@@ -1,7 +1,7 @@
 use num::complex::Complex64;
 use crate::spectrum::Spectrum;
 use crate::dimension::Dimension;
-use crate::Config;
+use crate::config;
 
 /// Generates a 4-level IDyOT memory from the input signal.
 ///
@@ -17,7 +17,7 @@ use crate::Config;
 /// let dimensions = process(&config, signal);
 /// ```
 ///
-pub fn process(config: &Config, signal: Vec<Complex64>) -> Vec<Dimension> {
+pub fn process(config: &config::Config, signal: Vec<config::InputElement>) -> Vec<Dimension> {
     let mut dimensions = vec![
         Dimension::new(0, 1.0 * config.radius_scale, config.resolution),
         Dimension::new(1, 10.0 * config.radius_scale, config.resolution),
@@ -25,8 +25,18 @@ pub fn process(config: &Config, signal: Vec<Complex64>) -> Vec<Dimension> {
         Dimension::new(3, 1000.0 * config.radius_scale, config.resolution),
     ];
 
-    for point in signal.into_iter() {
-        perceive(&mut dimensions, point)
+    let mut signal = signal.into_iter();
+    match config.input_type {
+        config::InputType::Audio => {
+            while let Some(config::InputElement::Audio(point)) = signal.next() {
+                perceive(&mut dimensions, point)
+            }
+        },
+        config::InputType::Text => {
+            while let Some(config::InputElement::Text(word)) = signal.next() {
+//                perceive(&mut dimensions, word)
+            }
+        }
     }
     dimensions
 }
@@ -35,13 +45,7 @@ pub fn process(config: &Config, signal: Vec<Complex64>) -> Vec<Dimension> {
 ///
 /// # Arguments
 /// * `dimensions` - dimensions of the memory
-/// * `point` - current value in signal that is added to the dimensions
-///
-/// # Examples
-///
-/// # Panics
-///
-/// # Errors
+/// * `value` - current value in signal that is added to the dimensions
 ///
 fn perceive(dimensions: &mut Vec<Dimension>, value: Complex64) {
     let mut spectrum = Spectrum::point(value);
@@ -59,9 +63,9 @@ mod tests {
 
     #[test]
     fn test_process() -> Result<(), String> {
-        let config = Config::default()?;
+        let config = config::Config::default()?;
         let signal = vec![Complex64::new(1.0, 1.0); 100];
-        let dimensions = process(&config, signal);
+//        let dimensions = process(&config, signal);
         Ok(())
     }
 }

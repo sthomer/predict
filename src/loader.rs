@@ -1,14 +1,18 @@
 use hound;
-use hound::Error;
+use std::fs;
+use std::io;
 
-pub fn load_wav_samples(path: &String) -> Result<Vec<f64>, Error> {
-    let reader = hound::WavReader::open(path)?;
-    let samples = reader
+pub fn load_text(path: &String) -> Result<Vec<String>, io::Error>  {
+    let text = fs::read_to_string(path)?;
+    Ok(text.split_whitespace().map(|s| s.to_string()).collect())
+}
+
+pub fn load_wav_samples(path: &String) -> Result<Vec<f64>, hound::Error> {
+    Ok(hound::WavReader::open(path)?
         .into_samples()
         .filter_map(Result::ok)
         .map(|sample: i16| sample as f64 / 32768.0) // Assumes wav is i16
-        .collect();
-    Ok(samples)
+        .collect())
 }
 
 struct Slides<'a, T: 'a> {

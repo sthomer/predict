@@ -18,30 +18,21 @@ pub fn categorize(
     unigram: &UnigramModel<Label>,
 ) -> Label {
     concepts.iter().map(|(_, concept)| concept)
-//        .filter(|category| member(category, concept))
+        .filter(|category| member(category, concept))
         .min_by_key(|concept| unigram.count(&concept.label))
         .unwrap_or(concept)
         .label
 }
 
-/// Returns whether the concept is a member of the category
+/// Decides whether a concept is a member of a category
 ///
 /// # Arguments
 /// * `category` - category to determine membership of
-/// * `concept` - concept to determine if a member
+/// * `concept` - concept to determine membership
 ///
 fn member(category: &Concept, target: &Concept) -> bool {
-//    let distance = norm(&category.location.centroid - &target.location.centroid);
-//    distance <= category.location.radius
-    unimplemented!()
-}
-
-/// Returns the norm (length) of the given point.
-/// # Arguments
-/// * `point` - vector representation
-///
-pub fn norm(point: Complex64) -> f64 {
-    point.norm()
+    let distance = (&category.location.centroid - &target.location.centroid).norm();
+    distance <= category.location.radius
 }
 
 #[cfg(test)]
