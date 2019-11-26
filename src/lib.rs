@@ -12,8 +12,10 @@ pub mod perception;
 pub mod segmentation;
 pub mod serialization;
 pub mod spectrum;
+pub mod visualization;
 
 use std::error::Error;
+use num::complex::Complex64;
 
 /// Run the system with the given configuration specification
 ///
@@ -23,10 +25,12 @@ use std::error::Error;
 pub fn run(config: config::Config) -> Result<(), Box<dyn Error>> {
 
     // Load time-domain signal from wav file
-    // and transform to frequency-domain signal
     let time_signal = loader::load_wav_samples(&config.load_from)?;
     let complex_signal = fourier::to_complex64(time_signal);
     let frequency_signal = fourier::fft(&complex_signal);
+    let stft: Vec<Vec<Complex64>> = complex_signal.chunks(256)
+        .map(|chunk| fourier::fft(&chunk.to_vec()))
+        .collect();
 
     // Perceive frequency-domain signal
     let dimensions = perception::process(&config, frequency_signal);
