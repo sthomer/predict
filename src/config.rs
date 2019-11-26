@@ -1,5 +1,3 @@
-use num::complex::Complex64;
-
 /// Configuration for loading/saving, as well as parameter dimensions
 pub struct Config {
     /// Path of WAV file to load audio from
@@ -14,8 +12,6 @@ pub struct Config {
     pub resolution: u16,
     /// Maximum number of dimensions in the memory
     pub max_depth: u16,
-    /// Type of input data, i.e. numeric or symbolic
-    pub input_type: InputType,
 }
 
 impl Config {
@@ -28,7 +24,6 @@ impl Config {
             radius_scale: 1.0,
             resolution: 256,
             max_depth: 4,
-            input_type: InputType::Audio,
         })
     }
 
@@ -41,16 +36,6 @@ impl Config {
         unimplemented!();
         // TODO: Parse arguments and create config
     }
-}
-
-pub enum InputType {
-    Audio,
-    Text,
-}
-
-pub enum InputElement {
-    Audio(Complex64),
-    Text(String),
 }
 
 #[cfg(test)]

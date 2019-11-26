@@ -1,47 +1,35 @@
-mod abstraction;
-mod categorization;
-mod concept_symbol;
-mod config;
-mod deserialization;
-mod dimension;
-mod fourier;
-mod interpolation;
-mod loader;
-mod markov_model;
-mod perception;
-mod segmentation;
-mod serialization;
-mod spectrum;
-
-pub use crate::config::Config;
+pub mod abstraction;
+pub mod categorization;
+pub mod concept_symbol;
+pub mod config;
+pub mod deserialization;
+pub mod dimension;
+pub mod fourier;
+pub mod interpolation;
+pub mod loader;
+pub mod markov_model;
+pub mod perception;
+pub mod segmentation;
+pub mod serialization;
+pub mod spectrum;
 
 use std::error::Error;
-use crate::config::InputType;
 
 /// Run the system with the given configuration specification
 ///
 /// # Arguments
 /// * `config` - specifies all parameters with which to run the system
 ///
-pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
+pub fn run(config: config::Config) -> Result<(), Box<dyn Error>> {
 
-    let sequence = match config.input_type {
-        config::InputType::Audio => {
-            // Load time-domain signal from wav file
-            // and transform to frequency-domain signal
-            let time_signal = loader::load_wav_samples(&config.load_from)?;
-            let complex_signal = fourier::to_complex64(time_signal);
-            let frequency_signal = fourier::fft(&complex_signal);
-            frequency_signal.into_iter().map(|e| config::InputElement::Audio(e)).collect()
-        }
-        config::InputType::Text => {
-            let string_signal = loader::load_text(&config.load_from)?;
-            string_signal.into_iter().map(|e| config::InputElement::Text(e)).collect()
-        }
-    };
+    // Load time-domain signal from wav file
+    // and transform to frequency-domain signal
+    let time_signal = loader::load_wav_samples(&config.load_from)?;
+    let complex_signal = fourier::to_complex64(time_signal);
+    let frequency_signal = fourier::fft(&complex_signal);
 
     // Perceive frequency-domain signal
-    let dimensions = perception::process(&config, sequence);
+    let dimensions = perception::process(&config, frequency_signal);
 
     // Save memory
     // Generate json

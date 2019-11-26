@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use predict::Config;
+use predict::config::Config;
 use std::env;
 use std::process;
 

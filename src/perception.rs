@@ -9,15 +9,7 @@ use crate::config;
 /// * `config` - configuration for scale, resolution, and depth
 /// * `signal` - input signal to process into memory
 ///
-/// # Examples
-/// ```
-/// use predict::Config;
-/// let config = Config::default();
-/// let signal = vec![Complex64::new(1.0, 1.0); 100];
-/// let dimensions = process(&config, signal);
-/// ```
-///
-pub fn process(config: &config::Config, signal: Vec<config::InputElement>) -> Vec<Dimension> {
+pub fn process(config: &config::Config, signal: Vec<Complex64>) -> Vec<Dimension> {
     let mut dimensions = vec![
         Dimension::new(0, 1.0 * config.radius_scale, config.resolution),
         Dimension::new(1, 10.0 * config.radius_scale, config.resolution),
@@ -26,17 +18,8 @@ pub fn process(config: &config::Config, signal: Vec<config::InputElement>) -> Ve
     ];
 
     let mut signal = signal.into_iter();
-    match config.input_type {
-        config::InputType::Audio => {
-            while let Some(config::InputElement::Audio(point)) = signal.next() {
-                perceive(&mut dimensions, point)
-            }
-        },
-        config::InputType::Text => {
-            while let Some(config::InputElement::Text(word)) = signal.next() {
-//                perceive(&mut dimensions, word)
-            }
-        }
+    for point in signal.into_iter() {
+        perceive(&mut dimensions, point);
     }
     dimensions
 }
@@ -65,7 +48,7 @@ mod tests {
     fn test_process() -> Result<(), String> {
         let config = config::Config::default()?;
         let signal = vec![Complex64::new(1.0, 1.0); 100];
-//        let dimensions = process(&config, signal);
+        let dimensions = process(&config, signal);
         Ok(())
     }
 }
