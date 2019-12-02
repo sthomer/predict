@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::ops::Index;
+use serde::{Serialize, Deserialize};
 
 /// Counts the number of times a given (length 1) key has been seen
+#[derive(Serialize, Deserialize, Debug)]
 pub struct UnigramModel<K>
 where
     K: Eq + Hash + Copy,
@@ -58,6 +60,7 @@ where
 }
 
 /// Counts the number of times pairs of keys (length 2) have been seen.
+#[derive(Serialize, Deserialize, Debug)]
 pub struct BigramModel<K>
 where
     K: Eq + Hash + Copy,

@@ -5,7 +5,6 @@ pub mod config;
 pub mod deserialization;
 pub mod dimension;
 pub mod fourier;
-pub mod interpolation;
 pub mod loader;
 pub mod markov_model;
 pub mod perception;
@@ -16,6 +15,7 @@ pub mod visualization;
 
 use std::error::Error;
 use num::complex::Complex64;
+use crate::dimension::Dimension;
 
 /// Run the system with the given configuration specification
 ///
@@ -36,7 +36,8 @@ pub fn run(config: config::Config) -> Result<(), Box<dyn Error>> {
     let dimensions = perception::process(&config, frequency_signal);
 
     // Save memory
-    // Generate json
+    let serialized = serde_json::to_string(&dimensions).unwrap();
+    let deserialized: Vec<Dimension> = serde_json::from_str(&serialized).unwrap();
 
     Ok(())
 }

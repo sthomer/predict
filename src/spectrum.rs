@@ -4,6 +4,20 @@ use itertools::{Itertools, zip};
 use std::iter::{IntoIterator, FromIterator};
 use std::vec::IntoIter;
 use approx::AbsDiff;
+use serde::{Serialize, Deserialize, Serializer};
+
+// TODO: Newtype pattern for Complex64 so it can be serialized
+//impl Serialize for Complex64 {
+//    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//    where
+//        S: Serializer,
+//    {
+//        let mut state = serializer.serialize_struct("Complex64", 2)?;
+//        state.serialize_field("re", &self.re)?;
+//        state.serialize_field("im", &self.im)?;
+//        state.end()
+//    }
+//}
 
 /// Spectrum of a trajectory and its length from the subordinate layer
 #[derive(Clone)]
@@ -15,6 +29,10 @@ pub struct Spectrum {
 }
 
 impl Spectrum {
+    /// Return a spectrum consisting of a single scalar
+    ///
+    /// # Arguments
+    /// * `value` - scalar to wrap in a Spectrum
     pub fn point(value: Complex64) -> Spectrum {
         Spectrum {
             point: Vector::from(vec![value]),
@@ -90,7 +108,7 @@ impl IndexMut<usize> for Signal {
 
 /// Complex vector representation for a spectrum with the standard semantics
 /// of a vector (i.e. component-wise operations, scalar multiplication, etc.)
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Vector(Vec<Complex64>);
 
 impl Vector {

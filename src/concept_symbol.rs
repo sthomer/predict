@@ -3,6 +3,7 @@ use num::complex::Complex64;
 use rand;
 use rand::Rng;
 use std::hash::{Hash, Hasher};
+use serde::{Serialize, Deserialize};
 
 /// Generates a label, concept, and symbol from spectrum
 ///
@@ -28,7 +29,7 @@ fn generate_label() -> Label {
 
 /// First and second statistical moments specifying a multidimensional Gaussian
 /// Used for updating the categorical region after a new concept is added.
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Moments {
     /// Sample mean (first sample moment)
     sample_mean: Vector,
@@ -53,7 +54,7 @@ impl Moments {
 
 /// Specifies the location and volume of a concept.
 /// Used for caching the centroid and radius, since these don't change often.
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Location {
     /// Center of the concept
     pub centroid: Vector,
@@ -62,7 +63,7 @@ pub struct Location {
 }
 
 /// Representation of a category in the semantic space
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Concept {
     /// Identifier of the concept
     pub label: Label,
@@ -157,7 +158,7 @@ impl Concept {
 }
 
 /// Representation of a category in episodic space
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Symbol {
     /// Identifier of the symbol
     pub label: Label,

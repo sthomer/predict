@@ -5,8 +5,10 @@ use crate::categorization::categorize;
 use crate::segmentation::segment;
 use crate::abstraction::{transform, interpolate};
 use std::collections::HashMap;
+use serde::{Serialize, Deserialize};
 
 /// Records the most recent symbol and unfinished sequence of a segment
+#[derive(Serialize, Deserialize, Debug)]
 struct MemoryHead {
     /// Previous symbol, to compare with the current symbol
     pub previous: Symbol,
@@ -29,6 +31,7 @@ impl MemoryHead {
 }
 
 /// Records the previously seen symbols in a given dimension
+#[derive(Serialize, Deserialize, Debug)]
 struct EpisodicMemory {
     /// A list of symbols in the order in which they were seen
     sequence: Vec<Symbol>,
@@ -58,6 +61,7 @@ impl EpisodicMemory {
 }
 
 /// The conceptual space of a dimension where the concepts live
+#[derive(Serialize, Deserialize, Debug)]
 struct SemanticMemory {
     /// Map of an identifying label to the concept representation
     space: HashMap<Label, Concept>,
@@ -85,6 +89,7 @@ impl SemanticMemory {
 
 /// The dimension at a given level of abstraction consisting of the dual memory
 /// and statistics of the constituent labels
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Dimension {
     /// Level of abstraction
     level: u16,
