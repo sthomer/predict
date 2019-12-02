@@ -5,7 +5,32 @@ use rand::Rng;
 use itertools_num;
 use itertools_num::ItertoolsNum;
 
-pub fn plot_flow(flow: Vec<usize>) -> Result<(), Box<dyn std::error::Error>> {
+type Res = Result<(), Box<dyn std::error::Error>>;
+
+// (x, y)
+pub fn plot_scatter(points: Vec<(usize, usize)>) -> Res {
+    let root = BitMapBackend::new("target/plots/scatter.png", (1024, 1024)).into_drawing_area();
+    root.fill(&WHITE);
+    let max_x = points.iter().map(|(x, _)| x).max().unwrap();
+    let max_y = points.iter().map(|(_, y)| y).max().unwrap();
+    let mut chart = ChartBuilder::on(&root)
+        .x_label_area_size(30)
+        .y_label_area_size(30)
+        .build_ranged(0..*max_x, 0..*max_y)?;
+    chart
+        .configure_mesh()
+        .x_labels(5)
+        .y_labels(5)
+        .draw()?;
+    chart.draw_series(
+        PointSeries::of_element(points, 5, &BLACK, &|c, s, st|
+            return EmptyElement::at(c) + Circle::new((0, 0), s, st.filled()),
+    ))?;
+    Ok(())
+}
+
+// (index, length)
+pub fn plot_flow(flow: Vec<(usize, usize)>) -> Res {
     let root = BitMapBackend::new("target/plots/flow.png", (1024, 512)).into_drawing_area();
     root.fill(&WHITE);
     let n = flow.len() as i32;
@@ -13,13 +38,13 @@ pub fn plot_flow(flow: Vec<usize>) -> Result<(), Box<dyn std::error::Error>> {
         .build_ranged(0..n, 0..n)?;
     chart.draw_series(
         flow.iter()
+            .map(|(_, length)| length)
             .cumsum::<usize>()
             .zip(flow.iter())
-            .enumerate()
-            .map(|(x, (p, &l))| (x as i32, p as i32, l as i32))
-            .map(|(x, p, l)| {
+            .map(|(x, (y, l))| (x as i32, *y as i32, *l as i32))
+            .map(|(x, y, l)| {
                 Rectangle::new(
-                    [(p - l, x), (p, x + 1)],
+                    [(x - l, y), (x, y + 1)],
                     HSLColor(0.0, 0.0, 0.5).filled()
                 )
             })
@@ -27,7 +52,7 @@ pub fn plot_flow(flow: Vec<usize>) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-pub fn plot_matrix(matrix: Vec<Vec<f64>>) -> Result<(), Box<dyn std::error::Error>> {
+pub fn plot_similarity(matrix: Vec<Vec<f64>>) -> Res {
     let root = BitMapBackend::new("target/plots/similarity.png", (1024, 1024)).into_drawing_area();
     root.fill(&WHITE)?;
     let n = matrix.len() as i32;
@@ -48,7 +73,7 @@ pub fn plot_matrix(matrix: Vec<Vec<f64>>) -> Result<(), Box<dyn std::error::Erro
     Ok(())
 }
 
-pub fn plot_spectrum(stft: Vec<Vec<Complex64>>) -> Result<(), Box<dyn std::error::Error>> {
+pub fn plot_spectrum(stft: Vec<Vec<Complex64>>) -> Res {
     let root = BitMapBackend::new("target/plots/spectrum.png", (1024, 768)).into_drawing_area();
     root.fill(&WHITE)?;
 
@@ -78,9 +103,9 @@ mod tests {
     use std::error::Error;
 
     #[test]
-    fn test_plot_spectrum() -> Result<(), Box<dyn Error>>{
+    fn test_plot_spectrum() -> Res {
         let stft = { // Block same as run in lib.rs
-            let time_signal = loader::load_wav_samples(&"export.wav".to_string())?;
+            let time_signal = loader::load_wav(&"export.wav".to_string())?;
             let complex_signal = fourier::to_complex64(time_signal);
             let frequency_signal = fourier::fft(&complex_signal);
             complex_signal.chunks(256)
@@ -92,25 +117,31 @@ mod tests {
     }
 
     #[test]
-    fn test_plot_similarity() -> Result<(), Box<dyn Error>> {
+    fn test_plot_similarity() -> Res {
         let mut rng = rand::thread_rng();
-        let mut matrix: Vec<Vec<f64>> = Vec::new();
-        for i in 0..100 {
-            matrix.push(Vec::new());
-            for j in 0..100 {
-                let v: f64 = rng.gen();
-                matrix.last_mut().unwrap().push(v);
-            }
-        }
-//        let matrix: Vec<Vec<f64>> = vec![vec![rng.gen(); 100]; 100];
-        plot_matrix(matrix)
+        let matrix = (0..100)
+            .map(|_| (0..100)
+                .map(|_| rng.gen())
+                .collect())
+            .collect();
+        plot_similarity(matrix)
     }
 
     #[test]
-    fn test_plot_flow() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_plot_flow() -> Res {
         let mut rng = rand::thread_rng();
-        let flow = (0..100).map(|_| rng.gen_range(1, 5)).collect();
-//        let flow = vec![rng.gen_range(1, 5); 100];
+        let flow = (0..100)
+            .map(|_| (rng.gen_range(1,100), rng.gen_range(1, 5)))
+            .collect();
         plot_flow(flow)
+    }
+
+    #[test]
+    fn test_plot_scatter() -> Res {
+        let mut rng = rand::thread_rng();
+        let scatter = (0..100)
+            .map(|_| (rng.gen_range(0, 20), rng.gen_range(0, 20)))
+            .collect();
+        plot_scatter(scatter)
     }
 }

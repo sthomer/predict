@@ -25,7 +25,7 @@ use num::complex::Complex64;
 pub fn run(config: config::Config) -> Result<(), Box<dyn Error>> {
 
     // Load time-domain signal from wav file
-    let time_signal = loader::load_wav_samples(&config.load_from)?;
+    let time_signal = loader::load_wav(&config.load_from)?;
     let complex_signal = fourier::to_complex64(time_signal);
     let frequency_signal = fourier::fft(&complex_signal);
     let stft: Vec<Vec<Complex64>> = complex_signal.chunks(256)
