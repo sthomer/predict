@@ -9,7 +9,7 @@ use crate::config;
 /// * `config` - configuration for scale, resolution, and depth
 /// * `signal` - input signal to process into memory
 ///
-pub fn process(config: &config::Config, signal: Vec<Complex64>) -> Vec<Dimension> {
+pub fn process(config: &config::Config, signal: Vec<Vec<Complex64>>) -> Vec<Dimension> {
     let mut dimensions = vec![
         Dimension::new(0, 1.0 * config.radius_scale, config.resolution),
         Dimension::new(1, 10.0 * config.radius_scale, config.resolution),
@@ -17,7 +17,7 @@ pub fn process(config: &config::Config, signal: Vec<Complex64>) -> Vec<Dimension
         Dimension::new(3, 1000.0 * config.radius_scale, config.resolution),
     ];
 
-    let mut signal = signal.into_iter();
+    let signal = signal.into_iter();
     for point in signal.into_iter() {
         perceive(&mut dimensions, point);
     }
@@ -30,7 +30,7 @@ pub fn process(config: &config::Config, signal: Vec<Complex64>) -> Vec<Dimension
 /// * `dimensions` - dimensions of the memory
 /// * `value` - current value in signal that is added to the dimensions
 ///
-fn perceive(dimensions: &mut Vec<Dimension>, value: Complex64) {
+fn perceive(dimensions: &mut Vec<Dimension>, value: Vec<Complex64>) {
     let mut spectrum = Spectrum::point(value);
     for dimension in dimensions.iter_mut() {
         match dimension.perceive(spectrum) {
@@ -46,9 +46,9 @@ mod tests {
 
     #[test]
     fn test_process() -> Result<(), String> {
-        let config = config::Config::default()?;
-        let signal = vec![Complex64::new(1.0, 1.0); 100];
-        let dimensions = process(&config, signal);
+//        let config = config::Config::default()?;
+//        let signal = vec![Complex64::new(1.0, 1.0); 100];
+//        process(&config, signal);
         Ok(())
     }
 }

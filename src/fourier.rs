@@ -40,6 +40,7 @@ const SPEED: Complex64 = Complex64 {
 };
 
 /// Naive 1D Discrete Fourier Transform
+#[allow(dead_code)]
 fn dft(vs: &Vec<Complex64>) -> Vec<Complex64> {
     let mut fs: Vec<Complex64> = Vec::new();
     let period = vs.len() as f64;
@@ -56,6 +57,7 @@ fn dft(vs: &Vec<Complex64>) -> Vec<Complex64> {
 }
 
 /// Naive MD Discrete Fourier Transform
+#[allow(dead_code)]
 fn mddft<D: Dimension>(vs: &Array<Complex64, D>) -> Array<Complex64, D> {
     let mut fs = vs.clone();
     for d in 0..vs.ndim() {

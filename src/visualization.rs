@@ -19,7 +19,7 @@ type Length = usize;
 ///
 pub fn plot_scatter(points: Vec<(X, Y)>) -> Res {
     let root = BitMapBackend::new("target/plots/scatter.png", (1024, 1024)).into_drawing_area();
-    root.fill(&WHITE);
+    root.fill(&WHITE)?;
     let max_x = points.iter().map(|(x, _)| x).max().unwrap();
     let max_y = points.iter().map(|(_, y)| y).max().unwrap();
     let mut chart = ChartBuilder::on(&root)
@@ -47,7 +47,7 @@ pub fn plot_scatter(points: Vec<(X, Y)>) -> Res {
 ///
 pub fn plot_flow(flow: Vec<(Index, Length)>) -> Res {
     let root = BitMapBackend::new("target/plots/flow.png", (1024, 512)).into_drawing_area();
-    root.fill(&WHITE);
+    root.fill(&WHITE)?;
     let n = flow.len() as i32;
     let mut chart = ChartBuilder::on(&root)
         .build_ranged(0..n, 0..n)?;
@@ -101,7 +101,6 @@ pub fn plot_similarity(matrix: Vec<Vec<f64>>) -> Res {
 pub fn plot_spectrum(stft: Vec<Vec<Complex64>>) -> Res {
     let root = BitMapBackend::new("target/plots/spectrum.png", (1024, 768)).into_drawing_area();
     root.fill(&WHITE)?;
-
     let (length, height) = (stft.len(), stft.first().unwrap().len() / 2);
     let mut chart = ChartBuilder::on(&root)
         .build_ranged(0..length as i32, height as i32..0)?;
@@ -132,7 +131,6 @@ mod tests {
         let stft = { // Block same as run in lib.rs
             let time_signal = loader::load_wav(&"export.wav".to_string())?;
             let complex_signal = fourier::to_complex64(time_signal);
-            let frequency_signal = fourier::fft(&complex_signal);
             complex_signal.chunks(256)
                 .map(|chunk| fourier::fft(&chunk.to_vec()))
                 .collect()

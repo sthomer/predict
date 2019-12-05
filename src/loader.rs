@@ -15,12 +15,14 @@ pub fn load_wav(path: &String) -> Result<Vec<f64>, hound::Error> {
         .collect())
 }
 
+#[allow(dead_code)]
 struct Slides<'a, T: 'a> {
     v: &'a [T],
     window: usize,
     step: usize,
 }
 
+#[allow(dead_code)]
 impl<'a, T> Iterator for Slides<'a, T> {
     type Item = &'a [T];
     fn next(&mut self) -> Option<&'a [T]> {
@@ -34,6 +36,7 @@ impl<'a, T> Iterator for Slides<'a, T> {
     }
 }
 
+#[allow(dead_code)]
 fn slides<T>(slice: &Vec<T>, window: usize, step: usize) -> Slides<T> {
     assert!(window != 0);
     assert!(step != 0);

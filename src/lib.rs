@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub mod abstraction;
 pub mod categorization;
 pub mod concept_symbol;
@@ -33,7 +35,7 @@ pub fn run(config: config::Config) -> Result<(), Box<dyn Error>> {
         .collect();
 
     // Perceive frequency-domain signal
-    let dimensions = perception::process(&config, frequency_signal);
+    let dimensions = perception::process(&config, stft);
 
     // Save memory
     let serialized = serde_json::to_string(&dimensions).unwrap();

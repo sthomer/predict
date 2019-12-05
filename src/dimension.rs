@@ -116,7 +116,6 @@ impl Dimension {
     /// * `resolution` - number of real + virtual points in a segment
     ///
     pub fn new(level: u16, radius_scale: f64, resolution: u16) -> Dimension {
-        let head = Concept::empty();
         Dimension {
             level,
             radius_scale,

@@ -67,8 +67,8 @@ pub fn interpolate(trajectory: Vec<(Vector, usize)>, resolution: u16) -> Signal 
     // Unfilled indices get value of the previous index => stepwise signal
     let mut vectors: Vec<Vector> = Vec::new();
     let mut repeat = spread.first().unwrap().0.clone();
-    for k in 0..resolution {
-        if let Some((v,i)) = spread.first() {
+    for _ in 0..resolution {
+        if let Some((v, _)) = spread.first() {
             repeat = v.clone();
             spread.remove(0);
         }
