@@ -30,7 +30,7 @@ pub fn run(config: config::Config) -> Result<(), Box<dyn Error>> {
     let time_signal = loader::load_wav(&config.load_from)?;
     let complex_signal = fourier::to_complex64(time_signal);
     let frequency_signal = fourier::fft(&complex_signal);
-    let stft: Vec<Vec<Complex64>> = complex_signal.chunks(256)
+    let stft: Vec<Vec<Complex64>> = complex_signal.chunks(128)
         .map(|chunk| fourier::fft(&chunk.to_vec()))
         .collect();
 
@@ -38,8 +38,8 @@ pub fn run(config: config::Config) -> Result<(), Box<dyn Error>> {
     let dimensions = perception::process(&config, stft);
 
     // Save memory
-    let serialized = serde_json::to_string(&dimensions).unwrap();
-    let deserialized: Vec<Dimension> = serde_json::from_str(&serialized).unwrap();
+//    let serialized = serde_json::to_string(&dimensions).unwrap();
+//    let deserialized: Vec<Dimension> = serde_json::from_str(&serialized).unwrap();
 
     Ok(())
 }
@@ -49,5 +49,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test() {}
+    fn test() -> Result<(), Box<dyn std::error::Error>> {
+        run(config::Config::default()?)
+    }
 }

@@ -110,13 +110,17 @@ impl Concept {
             label,
             location: Location {
                 centroid: vector.clone(),
-                radius: 0.0,
+                radius,
             },
             moments: Moments {
                 sample_mean: vector.clone(),
-                sample_variance: vector.clone(), //Complex64::new(0.0, 0.0),
+                sample_variance: Vector::fill(Complex64::default(), vector.len()),
                 prior_mean: vector.clone(),
-                prior_variance: vector.clone(), //Complex64::new((radius / 3.0).powi(2), 0.0),
+                prior_variance: {
+                    let fill = Complex64::new((radius / 3.0).powi(2), 0.0)
+                        / vector.len() as f64;
+                    Vector::fill(fill, vector.len())
+                },
             },
         }
     }

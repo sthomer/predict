@@ -18,11 +18,11 @@ impl Config {
     /// Returns a Config without paths, and default values for dimension params.
     pub fn default() -> Result<Config, &'static str> {
         Ok(Config {
-            load_from: "".to_string(),
-            save_at: "".to_string(),
-            init_with: "".to_string(),
+            load_from: "export.wav".to_string(),
+            save_at: "dimensions".to_string(),
+            init_with: "dimensions".to_string(),
             radius_scale: 1.0,
-            resolution: 256,
+            resolution: 128,
             max_depth: 4,
         })
     }

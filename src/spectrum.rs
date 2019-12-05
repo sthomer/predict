@@ -148,6 +148,14 @@ impl Vector {
         Vector { v: vector, }
     }
 
+    pub fn fill(value: Complex64, n: usize) -> Vector {
+        Vector::from(vec![value; n])
+    }
+
+    pub fn len(&self) -> usize {
+        self.v.len()
+    }
+
     /// Appends the value to the end of the vector
     ///
     /// # Arguments

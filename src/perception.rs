@@ -17,9 +17,10 @@ pub fn process(config: &config::Config, signal: Vec<Vec<Complex64>>) -> Vec<Dime
         Dimension::new(3, 1000.0 * config.radius_scale, config.resolution),
     ];
 
-    let signal = signal.into_iter();
-    for point in signal.into_iter() {
+    let n = signal.len();
+    for (i, point) in signal.into_iter().enumerate() {
         perceive(&mut dimensions, point);
+        println!("{}. {:.2}", i, (i as f64 / n as f64) * 100f64);
     }
     dimensions
 }
