@@ -10,11 +10,12 @@ edition = "2018"
 
 # General
 num = "0.2.0"
-ndarray = "0.12.1"
+ndarray = {version = "0.12.1", features = ["serde", "rayon", "approx", "blas"]}
 rand = "0.7.2"
 itertools = "0.8.1"
 itertools-num = "0.1.3"
 approx = "0.3.2"
+criterion = "0.3.0"
 
 # IO and Visualization
 hound = "3.4.0"

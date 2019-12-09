@@ -30,7 +30,7 @@ pub fn run(config: config::Config) -> Result<(), Box<dyn Error>> {
     let time_signal = loader::load_wav(&config.load_from)?;
     let complex_signal = fourier::to_complex64(time_signal);
     let frequency_signal = fourier::fft(&complex_signal);
-    let stft: Vec<Vec<Complex64>> = complex_signal.chunks(128)
+    let stft: Vec<Vec<Complex64>> = complex_signal.chunks(64)
         .map(|chunk| fourier::fft(&chunk.to_vec()))
         .collect();
 
