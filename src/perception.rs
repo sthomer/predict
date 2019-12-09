@@ -1,7 +1,8 @@
-use num::complex::Complex64;
 use crate::spectrum::Spectrum;
 use crate::dimension::Dimension;
 use crate::config;
+use ndarray::Array1;
+use ndarray_linalg::types::c64;
 
 /// Generates a 4-level IDyOT memory from the input signal.
 ///
@@ -9,7 +10,7 @@ use crate::config;
 /// * `config` - configuration for scale, resolution, and depth
 /// * `signal` - input signal to process into memory
 ///
-pub fn process(config: &config::Config, signal: Vec<Vec<Complex64>>) -> Vec<Dimension> {
+pub fn process(config: &config::Config, signal: Vec<Array1<c64>>) -> Vec<Dimension> {
     let mut dimensions = vec![
         Dimension::new(0, 1.0 * config.radius_scale, config.resolution),
         Dimension::new(1, 10.0 * config.radius_scale, config.resolution),
@@ -20,7 +21,7 @@ pub fn process(config: &config::Config, signal: Vec<Vec<Complex64>>) -> Vec<Dime
     let n = signal.len();
     for (i, point) in signal.into_iter().enumerate() {
         perceive(&mut dimensions, point);
-        println!("{}. {:.2}", i, (i as f64 / n as f64) * 100f64);
+//        println!("{}. {:.2}", i, (i as f64 / n as f64) * 100f64);
     }
     dimensions
 }
@@ -31,7 +32,7 @@ pub fn process(config: &config::Config, signal: Vec<Vec<Complex64>>) -> Vec<Dime
 /// * `dimensions` - dimensions of the memory
 /// * `value` - current value in signal that is added to the dimensions
 ///
-fn perceive(dimensions: &mut Vec<Dimension>, value: Vec<Complex64>) {
+fn perceive(dimensions: &mut Vec<Dimension>, value: Array1<c64>) {
     let mut spectrum = Spectrum::point(value);
     for dimension in dimensions.iter_mut() {
         match dimension.perceive(spectrum) {

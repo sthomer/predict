@@ -6,6 +6,12 @@ use std::vec::IntoIter;
 use approx::AbsDiff;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::ser::SerializeSeq;
+use ndarray::{Array1, Array2, arr1, arr2};
+use ndarray_linalg::types::c64;
+
+pub type Vector = Array1<c64>;
+
+pub type Signal = Array2<c64>;
 
 /// Spectrum of a trajectory and its length from the subordinate layer
 #[derive(Clone)]
@@ -21,14 +27,11 @@ impl Spectrum {
     ///
     /// # Arguments
     /// * `value` - scalar to wrap in a Spectrum
-    pub fn point(value: Vec<Complex64>) -> Spectrum {
-        Spectrum {
-            point: Vector::from(value),
-            length: 1,
-        }
+    pub fn point(point: Array1<c64>) -> Spectrum {
+        Spectrum { point, length: 1, }
     }
 }
-
+/*
 /// Sequence of vectors in either the time or frequency domain
 #[derive(Default)]
 pub struct Signal(Vec<Vector>);
@@ -93,63 +96,63 @@ impl IndexMut<usize> for Signal {
         &mut self.0[index]
     }
 }
-
+/*
 /// Complex vector representation for a spectrum with the standard semantics
 /// of a vector (i.e. component-wise operations, scalar multiplication, etc.)
-#[derive(Clone, Serialize, Deserialize, Debug)]
+//#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Vector {
-    #[serde(serialize_with = "serialize_vec_complex64")]
-    #[serde(deserialize_with = "deserialize_vec_complex64")]
-    v: Vec<Complex64>,
+//    #[serde(serialize_with = "serialize_vec_complex64")]
+//    #[serde(deserialize_with = "deserialize_vec_complex64")]
+    v: Array1<c64>,
 }
 
-#[derive(Serialize, Deserialize)]
-#[serde(remote = "Complex64")]
-struct Complex64Def {
-    re: f64,
-    im: f64,
-}
+//#[derive(Serialize, Deserialize)]
+//#[serde(remote = "Complex64")]
+//struct Complex64Def {
+//    re: f64,
+//    im: f64,
+//}
 
-fn deserialize_vec_complex64<'de, D>(deserializer: D) -> Result<Vec<Complex64>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    #[derive(Deserialize)]
-    struct Wrapper(#[serde(with = "Complex64Def")] Complex64);
-    let v = Vec::deserialize(deserializer)?;
-    Ok(v.into_iter().map(|Wrapper(a)| a).collect())
-}
+//fn deserialize_vec_complex64<'de, D>(deserializer: D) -> Result<Vec<Complex64>, D::Error>
+//where
+//    D: Deserializer<'de>,
+//{
+//    #[derive(Deserialize)]
+//    struct Wrapper(#[serde(with = "Complex64Def")] Complex64);
+//    let v = Vec::deserialize(deserializer)?;
+//    Ok(v.into_iter().map(|Wrapper(a)| a).collect())
+//}
 
-fn serialize_vec_complex64<S>(v: &Vec<Complex64>, serializer: S) -> Result<S::Ok, S::Error>
-where
-    S: Serializer,
-{
-    #[derive(Serialize)]
-    struct Wrapper(#[serde(with = "Complex64Def")] Complex64);
-    let mut seq = serializer.serialize_seq(Some(v.len()))?;
-    for c in v {
-        seq.serialize_element(&Wrapper(*c))?;
-    }
-    seq.end()
-}
+//fn serialize_vec_complex64<S>(v: &Vec<Complex64>, serializer: S) -> Result<S::Ok, S::Error>
+//where
+//    S: Serializer,
+//{
+//    #[derive(Serialize)]
+//    struct Wrapper(#[serde(with = "Complex64Def")] Complex64);
+//    let mut seq = serializer.serialize_seq(Some(v.len()))?;
+//    for c in v {
+//        seq.serialize_element(&Wrapper(*c))?;
+//    }
+//    seq.end()
+//}
 
 
 impl Vector {
     /// Returns an empty vector
     pub fn empty() -> Vector {
-        Vector { v: Vec::new(), }
+        Vector { v: Array1:: }
     }
 
     /// Returns a vector filled with the provided complex values
     ///
     /// # Arguments
     /// * `vector` - complex values to put in the vector
-    pub fn from(vector: Vec<Complex64>) -> Vector {
-        Vector { v: vector, }
+    pub fn from(v: Array1<c64>) -> Vector {
+        Vector { v }
     }
 
-    pub fn fill(value: Complex64, n: usize) -> Vector {
-        Vector::from(vec![value; n])
+    pub fn fill(value: c64, n: usize) -> Vector {
+        Vector::from(arr1([value; n]))
     }
 
     pub fn len(&self) -> usize {
@@ -320,3 +323,5 @@ impl Neg for &Vector {
         Vector::from(self.v.iter().map(|c| -c).collect())
     }
 }
+*/
+*/

@@ -126,18 +126,18 @@ mod tests {
     use crate::fourier;
     use std::error::Error;
 
-    #[test]
-    fn test_plot_spectrum() -> Res {
-        let stft = { // Block same as run in lib.rs
-            let time_signal = loader::load_wav(&"export.wav".to_string())?;
-            let complex_signal = fourier::to_complex64(time_signal);
-            complex_signal.chunks(256)
-                .map(|chunk| fourier::fft(&chunk.to_vec()))
-                .collect()
-        };
-        plot_spectrum(stft)?;
-        Ok(())
-    }
+//    #[test]
+//    fn test_plot_spectrum() -> Res {
+//        let stft = { // Block same as run in lib.rs
+//            let time_signal = loader::load_wav(&"export.wav".to_string())?;
+//            let complex_signal = fourier::to_complex64(time_signal);
+//            complex_signal.chunks(256)
+//                .map(|chunk| fourier::fft(&chunk.to_vec()))
+//                .collect()
+//        };
+//        plot_spectrum(stft)?;
+//        Ok(())
+//    }
 
     #[test]
     fn test_plot_similarity() -> Res {

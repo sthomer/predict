@@ -2,6 +2,7 @@ use num::complex::Complex64;
 use std::collections::HashMap;
 use crate::concept_symbol::{Concept, Label};
 use crate::markov_model::UnigramModel;
+use ndarray_linalg::norm::Norm;
 
 /// Returns the label of the category to which the given concept belongs.
 /// If concept can belong to multiple categories, it is placed in the most rare,

@@ -4,6 +4,7 @@ use rand;
 use rand::Rng;
 use std::hash::{Hash, Hasher};
 use serde::{Serialize, Deserialize};
+use ndarray_linalg::types::c64;
 
 /// Generates a label, concept, and symbol from spectrum
 ///
@@ -42,12 +43,13 @@ pub struct Moments {
 }
 
 impl Moments {
-    pub fn empty() -> Moments {
+    pub fn empty(m: Moments) -> Moments {
+        let shape = m.prior_mean.dim();
         Moments {
-            sample_mean: Vector::empty(),
-            sample_variance: Vector::empty(),
-            prior_mean: Vector::empty(),
-            prior_variance: Vector::empty(),
+            sample_mean: Vector::zeros(shape),
+            sample_variance: Vector::zeros(shape),
+            prior_mean: Vector::zeros(shape),
+            prior_variance: Vector::zeros(shape),
         }
     }
 }
@@ -90,13 +92,13 @@ impl Hash for Concept {
 
 impl Concept {
     /// Returns an empty concept without spectrum or length
-    pub fn empty() -> Concept {
-        let spectrum = Spectrum {
-            point: Vector::empty(),
-            length: 0,
-        };
-        Concept::new(0, spectrum.point, 0.0)
-    }
+//    pub fn empty() -> Concept {
+//        let spectrum = Spectrum {
+//            point: Vector::empty(),
+//            length: 0,
+//        };
+//        Concept::new(0, spectrum.point, 0.0)
+//    }
 
     /// Returns a new concept.
     ///
@@ -114,17 +116,18 @@ impl Concept {
             },
             moments: Moments {
                 sample_mean: vector.clone(),
-                sample_variance: Vector::fill(Complex64::default(), vector.len()),
+                sample_variance: Vector::default(vector.len()),
                 prior_mean: vector.clone(),
                 prior_variance: {
-                    let fill = Complex64::new((radius / 3.0).powi(2), 0.0)
+                    let fill = c64::new((radius / 3.0).powi(2), 0.0)
                         / vector.len() as f64;
-                    Vector::fill(fill, vector.len())
+                    Vector::from_elem(vector.len(), fill)
                 },
             },
         }
     }
 
+    // TODO: Use Array2 directly
     /// Posterior update of the Gaussian representing the category.
     ///
     /// # Arguments
@@ -132,32 +135,32 @@ impl Concept {
     /// * `count` - number of times the category has been seen
     ///
     pub fn update(&mut self, concept: Concept, count: usize) {
-        let m = self.moments.clone();
-        let x = concept.location.centroid.clone();
-        let mut u = Moments::empty();
-
-        u.sample_mean = &m.sample_mean + (&x - &m.sample_mean) / count;
-        u.sample_variance = if count == 1 { m.sample_variance } else {
-            &m.sample_variance +
-                (-&m.sample_variance + (&x - &u.sample_mean) * (&x - &m.sample_mean)) / count
-        };
-        if (&m.prior_variance + &u.sample_variance).is_zero() {
-            u.prior_mean = m.prior_mean;
-            u.prior_variance = m.prior_variance;
-        } else {
-            u.prior_mean = (&u.sample_mean * &m.prior_mean + &m.prior_variance * &x)
-                / (&m.prior_variance + &u.sample_variance);
-            u.prior_variance = if count == 1 { m.prior_variance } else {
-                &u.sample_variance * &m.prior_variance
-                    / (&u.sample_variance + &m.prior_variance)
-            }
-        }
-        let location = Location {
-            centroid: u.prior_mean.clone(),
-            radius: (u.prior_mean.clone().sqrt() * Complex64::new(3f64, 0f64)).norm(),
-        };
-        self.location = location;
-        self.moments = u;
+//        let m = self.moments.clone();
+//        let x = concept.location.centroid.clone();
+//        let mut u = Moments::empty(m);
+//
+//        u.sample_mean = &m.sample_mean + (&x - &m.sample_mean) / count;
+//        u.sample_variance = if count == 1 { m.sample_variance } else {
+//            &m.sample_variance +
+//                (-&m.sample_variance + (&x - &u.sample_mean) * (&x - &m.sample_mean)) / count
+//        };
+//        if (&m.prior_variance + &u.sample_variance).is_zero() {
+//            u.prior_mean = m.prior_mean;
+//            u.prior_variance = m.prior_variance;
+//        } else {
+//            u.prior_mean = (&u.sample_mean * &m.prior_mean + &m.prior_variance * &x)
+//                / (&m.prior_variance + &u.sample_variance);
+//            u.prior_variance = if count == 1 { m.prior_variance } else {
+//                &u.sample_variance * &m.prior_variance
+//                    / (&u.sample_variance + &m.prior_variance)
+//            }
+//        }
+//        let location = Location {
+//            centroid: u.prior_mean.clone(),
+//            radius: (u.prior_mean.clone().sqrt() * Complex64::new(3f64, 0f64)).norm(),
+//        };
+//        self.location = location;
+//        self.moments = u;
     }
 }
 

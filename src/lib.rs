@@ -16,8 +16,9 @@ pub mod spectrum;
 pub mod visualization;
 
 use std::error::Error;
-use num::complex::Complex64;
 use crate::dimension::Dimension;
+use ndarray::{s, Array1};
+use ndarray_linalg::types::c64;
 
 /// Run the system with the given configuration specification
 ///
@@ -29,9 +30,10 @@ pub fn run(config: config::Config) -> Result<(), Box<dyn Error>> {
     // Load time-domain signal from wav file
     let time_signal = loader::load_wav(&config.load_from)?;
     let complex_signal = fourier::to_complex64(time_signal);
-    let frequency_signal = fourier::fft(&complex_signal);
-    let stft: Vec<Vec<Complex64>> = complex_signal.chunks(64)
-        .map(|chunk| fourier::fft(&chunk.to_vec()))
+//    let size = (complex_signal.len() as f64).log2().trunc().exp2() as usize;
+//    let frequency_signal = fourier::fft(complex_signal.slice(s![..size]));
+    let stft: Vec<Array1<c64>> = complex_signal.exact_chunks(64).into_iter()
+        .map(|chunk| fourier::fft(chunk))
         .collect();
 
     // Perceive frequency-domain signal

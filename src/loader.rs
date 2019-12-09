@@ -1,13 +1,14 @@
 use hound;
 use std::fs;
 use std::io;
+use ndarray::Array1;
 
 pub fn load_text(path: &String) -> Result<Vec<String>, io::Error>  {
     let text = fs::read_to_string(path)?;
     Ok(text.split_whitespace().map(|s| s.to_string()).collect())
 }
 
-pub fn load_wav(path: &String) -> Result<Vec<f64>, hound::Error> {
+pub fn load_wav(path: &String) -> Result<Array1<f64>, hound::Error> {
     Ok(hound::WavReader::open(path)?
         .into_samples()
         .filter_map(Result::ok)
