@@ -12,6 +12,7 @@ edition = "2018"
 num = "0.2.0"
 ndarray = { version = "0.13.0", features = ["serde", "rayon", "approx", "blas"] }
 ndarray-linalg = "0.12.0"
+ndarray-stats = "0.3.0"
 rand = "0.7.2"
 itertools = "0.8.1"
 itertools-num = "0.1.3"

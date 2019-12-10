@@ -5,6 +5,9 @@ use rand::Rng;
 use std::hash::{Hash, Hasher};
 use serde::{Serialize, Deserialize};
 use ndarray_linalg::types::c64;
+use ndarray_linalg::norm::Norm;
+use approx::AbsDiff;
+use itertools::Itertools;
 
 /// Generates a label, concept, and symbol from spectrum
 ///
@@ -43,8 +46,8 @@ pub struct Moments {
 }
 
 impl Moments {
-    pub fn empty(m: Moments) -> Moments {
-        let shape = m.prior_mean.dim();
+    pub fn empty(v: &Vector) -> Moments {
+        let shape = v.dim();
         Moments {
             sample_mean: Vector::zeros(shape),
             sample_variance: Vector::zeros(shape),
@@ -135,32 +138,38 @@ impl Concept {
     /// * `count` - number of times the category has been seen
     ///
     pub fn update(&mut self, concept: Concept, count: usize) {
-//        let m = self.moments.clone();
-//        let x = concept.location.centroid.clone();
-//        let mut u = Moments::empty(m);
-//
-//        u.sample_mean = &m.sample_mean + (&x - &m.sample_mean) / count;
-//        u.sample_variance = if count == 1 { m.sample_variance } else {
-//            &m.sample_variance +
-//                (-&m.sample_variance + (&x - &u.sample_mean) * (&x - &m.sample_mean)) / count
-//        };
-//        if (&m.prior_variance + &u.sample_variance).is_zero() {
-//            u.prior_mean = m.prior_mean;
-//            u.prior_variance = m.prior_variance;
-//        } else {
-//            u.prior_mean = (&u.sample_mean * &m.prior_mean + &m.prior_variance * &x)
-//                / (&m.prior_variance + &u.sample_variance);
-//            u.prior_variance = if count == 1 { m.prior_variance } else {
-//                &u.sample_variance * &m.prior_variance
-//                    / (&u.sample_variance + &m.prior_variance)
-//            }
-//        }
-//        let location = Location {
-//            centroid: u.prior_mean.clone(),
-//            radius: (u.prior_mean.clone().sqrt() * Complex64::new(3f64, 0f64)).norm(),
-//        };
-//        self.location = location;
-//        self.moments = u;
+        let mp = self.moments.prior_mean.clone();
+        let vp = self.moments.prior_variance.clone();
+        let ms = self.moments.sample_mean.clone();
+        let vs = self.moments.sample_variance.clone();
+        let x = concept.location.centroid;
+        let mut u = Moments::empty(&x);
+
+        u.sample_mean = &ms + &((&x - &ms) / count as f64);
+        u.sample_variance = if count == 1 { vs } else {
+            &vs + &((-&vs + (&x - &u.sample_mean) * (&x - &ms)) / count as f64)
+        };
+
+        let any_zero = (&vp + &u.sample_variance).iter()
+            .any(|c| AbsDiff::default().eq(&0f64, &c.norm()));
+
+        if any_zero {
+            u.prior_mean = mp;
+            u.prior_variance = vp;
+        } else {
+            u.prior_mean = (&u.sample_mean * &mp + &vp * &x)
+                / (&vp + &u.sample_variance);
+            u.prior_variance = if count == 1 { vp } else {
+                &u.sample_variance * &vp
+                    / (&u.sample_variance + &vp)
+            }
+        }
+        let location = Location {
+            centroid: u.prior_mean.clone(),
+            radius: (u.prior_mean.map(c64::sqrt) * c64::new(3f64, 0f64)).norm(),
+        };
+        self.location = location;
+        self.moments = u;
     }
 }
 

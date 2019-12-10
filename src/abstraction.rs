@@ -15,9 +15,9 @@ use crate::fourier::fft;
 pub fn transform(signal: Signal) -> Spectrum {
     let length = signal.len();
     let spectrum = fourier(signal);
-//    let total_length: usize = spectrum.shape().iter().product();
-    let point = spectrum.into_dimensionality::<Ix1>().unwrap();
-//    let point = spectrum.into_shape(total_length).unwrap();
+    let total_length: usize = spectrum.shape().iter().product();
+    let point = spectrum.into_shape(total_length).unwrap();
+    let point = point.into_dimensionality::<Ix1>().unwrap();
 //    let point = spectrum.into_iter().flatten().collect();
     Spectrum { point, length, }
 }

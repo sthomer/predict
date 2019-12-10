@@ -32,7 +32,7 @@ pub fn run(config: config::Config) -> Result<(), Box<dyn Error>> {
     let complex_signal = fourier::to_complex64(time_signal);
 //    let size = (complex_signal.len() as f64).log2().trunc().exp2() as usize;
 //    let frequency_signal = fourier::fft(complex_signal.slice(s![..size]));
-    let stft: Vec<Array1<c64>> = complex_signal.exact_chunks(64).into_iter()
+    let stft: Vec<Array1<c64>> = complex_signal.exact_chunks(16).into_iter()
         .map(|chunk| fourier::fft(chunk))
         .collect();
 

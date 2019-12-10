@@ -21,7 +21,7 @@ pub fn process(config: &config::Config, signal: Vec<Array1<c64>>) -> Vec<Dimensi
     let n = signal.len();
     for (i, point) in signal.into_iter().enumerate() {
         perceive(&mut dimensions, point);
-//        println!("{}. {:.2}", i, (i as f64 / n as f64) * 100f64);
+        println!("{}. {:.2}", i, (i as f64 / n as f64) * 100f64);
     }
     dimensions
 }

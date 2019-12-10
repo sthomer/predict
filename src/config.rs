@@ -22,7 +22,7 @@ impl Config {
             save_at: "dimensions".to_string(),
             init_with: "dimensions".to_string(),
             radius_scale: 1.0,
-            resolution: 64,
+            resolution: 16,
             max_depth: 4,
         })
     }
